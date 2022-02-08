@@ -1,21 +1,39 @@
+# Run this dashboard from the root of the
+# github repository:
+using Pkg
+if  ! isfile("Manifest.toml")
+    Pkg.activate(".")
+    Pkg.instantiate()
+end
 
 using Dash
 using CitableBase, CitableText, CitableCorpus
 using Unicode
 
-url = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/release-candidates/hmt-current.cex"
-corpus = fromcex(url, CitableTextCorpus, UrlReader)
-normalizededition = filter(psg -> endswith(workcomponent(psg.urn), "normalized"), corpus.passages)
-#external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
-#app = dash(external_stylesheets=external_stylesheets)
+MIN_LENGTH = 3
 
-#function findtext(psgs::Vector{CitablePassages, q::AbstractString})
-#    filter(p -> contains(p.text, q), psgs) |> length
-#end
-app = dash()
+url = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/release-candidates/hmt-current.cex"
+
+
+catalog = fromcex(url, TextCatalogCollection, UrlReader)
+normalizededition = filter(psg -> endswith(workcomponent(psg.urn), "normalized"),
+    fromcex(url, CitableTextCorpus, UrlReader).passages)
+
+external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
+app = dash(external_stylesheets=external_stylesheets)
+
 
 app.layout = html_div() do
-    html_h1("HMT project: alphabetic search"),
+    html_h1("HMT project: search corpus by alphabetic string"),
+    html_blockquote() do
+        html_ul() do
+            html_li("Select manuscripts and texts to include"),
+            html_li("Enter an alphabetic string (no accents or breathings) in Unicode Greek to search for"),
+            html_li() do
+                dcc_markdown("Minimum length of query string is **3 characters**")
+            end
+        end
+    end,
     html_div() do
             "Manuscripts to include:",
             html_div(style=Dict("max-width" => "200px"),
@@ -25,7 +43,8 @@ app.layout = html_div() do
                         (label = "All manuscripts", value = "all"),
                         (label = "Venetus A", value = "va")
                     ],
-                    value = "all"
+                    value = "all",
+                    clearable=false
                 )
             )
     end,
@@ -39,10 +58,11 @@ app.layout = html_div() do
                     (label = "Iliad", value = "iliad"),
                     (label = "scholia", value = "scholia"),
                 ],
-                value = "scholia"
+                value = "scholia",
+                clearable=false
             )
         )
-end,
+    end,
   
     html_div(
         children = [
@@ -52,6 +72,38 @@ end,
     ),
     html_br(),
     html_div(id = "results")
+end
+
+"Format a citable passage in markdown."
+function formatpassage(psg)
+	"1. **" * passagecomponent(psg.urn) * "**: " * psg.text
+end
+
+"Format the title of a cataloged work in markdown."
+function markdowntitle(catentry::CatalogedText)
+	if isiliad(urn(catentry))
+		textgroup(catentry) * ", *" * work(catentry) * "* (" * version(catentry) * ")"
+	else
+		textgroup(catentry) * ", *" * work(catentry) * "*"
+	end
+end
+
+
+"Look up formatted title for text `u` in a text catalog."
+function titleforurn(u::CtsUrn, catalog::TextCatalogCollection)
+	catalogurn = isiliad(u) ? dropexemplar(u) : dropversion(u)
+	
+	catentries = urncontains(catalogurn, catalog).entries
+	if length(catentries) == 1
+		markdowntitle(catentries[1])
+	else
+		"FAILED TO FIND $(u)  in catalog"
+	end
+end
+
+"True if `u` identifies an `Iliad` passage."
+function isiliad(u::CtsUrn)
+	urncontains(CtsUrn("urn:cts:greekLit:tlg0012.tlg001:"), u)
 end
 
 callback!(app, 
@@ -83,9 +135,17 @@ callback!(app,
     if isnothing(selected_passages)
         ""
     elseif length(query_value) > 2
-        hits = filter(p -> contains(lowercase(p.text), lowercase(query_value)), selected_passages) 
-     
-        summary = "Results of search for: $(query_value) : $(length(selected_passages)) passages in $(ms_value). $(length(hits)) matches"
+
+        alphabeticstrings = map(psg -> Unicode.normalize(psg.text, stripmark=true) |> lowercase, selected_passages)
+
+        indices = findall(contains(lowercase(query_value)), alphabeticstrings)
+        #hits = filter(p -> contains(p, lowercase(query_value)), alphabeticstrings) 
+        hits = []
+		for i in indices
+			push!(hits, selected_passages[i])
+		end
+		hits
+        summary = "## $(length(hits)) matches for **$(query_value)**\n\n$(length(selected_passages)) citable passages in $(ms_value)."
         rslts = []
         for hit in hits
             push!(rslts, "1. " * hit.text)
