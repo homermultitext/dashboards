@@ -1,4 +1,4 @@
-# Homer Multitext projects: dashboards
+# Homer Multitext project: dashboards
 
 This repository hosts interactive dashboards written wtih [Dash.jl](https://dash.plotly.com/julia) that you can use to explore the contents of published releases of the HMT project archive.  
 
