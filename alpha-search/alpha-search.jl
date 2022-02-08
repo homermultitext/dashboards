@@ -135,22 +135,31 @@ callback!(app,
     if isnothing(selected_passages)
         ""
     elseif length(query_value) > 2
-
+        # Find indices for matches in alphabetic version,
+        # use fully formatted version:
         alphabeticstrings = map(psg -> Unicode.normalize(psg.text, stripmark=true) |> lowercase, selected_passages)
-
         indices = findall(contains(lowercase(query_value)), alphabeticstrings)
-        #hits = filter(p -> contains(p, lowercase(query_value)), alphabeticstrings) 
         hits = []
 		for i in indices
 			push!(hits, selected_passages[i])
 		end
-		hits
         summary = "## $(length(hits)) matches for **$(query_value)**\n\n$(length(selected_passages)) citable passages in $(ms_value)."
-        rslts = []
-        for hit in hits
-            push!(rslts, "1. " * hit.text)
-        end
-        dcc_markdown(summary * "\n\n" * join(rslts, "\n"))
+
+        # Format results in markdown:
+        currentwork = nothing
+		mdlines = [summary]
+		for psg in hits
+			newwork = droppassage(psg.urn)
+			if newwork != currentwork
+				title = titleforurn(newwork, catalog)
+				push!(mdlines, "#### $(title)")
+				currentwork = newwork
+			end
+			push!(mdlines, formatpassage(psg))
+		end
+		mdcontent = join(mdlines, "\n\n")
+        dcc_markdown(mdcontent)
+      
     else
         "Selected corpus has $(length(selected_passages)) passages. "
 
