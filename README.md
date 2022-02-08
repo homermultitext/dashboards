@@ -27,3 +27,5 @@ Make sure you have the Julia plugin installed.
 
 `julia --project="." PATH/TO/DASHBOARD`
 
+
+By default, the dashboards run on port 8050: open a web browser to  [http://0.0.0.0:8050](http://0.0.0.0:8050).
