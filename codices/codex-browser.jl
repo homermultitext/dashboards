@@ -10,15 +10,50 @@ url = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/relea
 
 
 using Dash
-using CitableBase, CitablePhysicalText, CitableImage
+using CitableBase, CitablePhysicalText, CitableObject
+using CitableImage
 
 codices = fromcex(url, Codex, UrlReader)
 
-function facs(ms, pg)
-    [
-        html_h6("Facsimile of $(ms), pg $(pg)")
-    ]
+
+# Kludge until proper fix in Codex constructor...
+function msmenu(codd::Vector{Codex})
+    opts = []
+    for c in codd
+        lbl = c.pages[1].urn |> dropversion |> collectioncomponent
+        coll = c.pages[1].urn |> dropobject
+        push!(opts, (label = "Manuscript $(lbl)", value = string(coll)))
+    end
+    opts
 end
+defaultms = msmenu(codices)[1][2]
+
+function facs(pg)
+    if isnothing(pg)
+        nothing
+    else
+        [
+            html_h6("Facsimile of $(pg)")
+        ]
+    end
+end
+
+function pagesmenu(ms::AbstractString)
+   
+    u = Cite2Urn(ms)
+   
+    codex = filter(c -> urn(c) == u, codices)[1]
+    opts = []
+    for p in codex.pages
+        lbl = urn(p) |> objectcomponent
+        val = string(urn(p))
+        push!(opts, (label = lbl, value = val))
+    end
+    opts
+ 
+   
+end
+
 function playpages(siglum)
     if siglum == "msA"
         [(label = "12 recto", value = "12r"),
@@ -48,14 +83,8 @@ app.layout = html_div() do
     html_h6("Manuscript"),
     dcc_radioitems(
         id = "ms",
-        options = [
-            (label = "Venetus A", value = "msA"),
-            (label = "Venetus B", value = "msB"),
-            (label = "Escorial, Ω 1.12", value = "e4"),
-            (label = "Escorial, Υ 1.1", value = "e3"),
-            (label = "British Library, Burney 86", value = "burney86")
-        ],
-        value = ""
+        options = msmenu(codices),
+        value = defaultms
     ),
 
     html_div() do
@@ -71,21 +100,19 @@ end
 
 callback!(app, 
     Output("pg", "options"), 
-    Output("display", "children"), 
     Input("ms", "value"),
     ) do  ms_choice
 
-    return (playpages(ms_choice), nothing)
+    return pagesmenu(ms_choice)
 end
 
 
 callback!(app, 
     Output("display", "children"), 
-    Input("ms", "value"),
     Input("pg", "value")
-    ) do  ms_choice, pg_choice
+    ) do pg_choice
 
-    return facs(ms_choice, pg_choice)
+    return facs(pg_choice)
     #return playpages(ms_choice)
 end
 
