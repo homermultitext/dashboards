@@ -60,18 +60,6 @@ app.layout = html_div() do
 
 end
 
-#=
-
-callback!(app, 
-    Output("pg", "options"), 
-    Output("debug", "children"), 
-    Input("iliad", "value"),
-    Input("ms", "value"),
-    ) do iliad_psg, ms_choice
-    msg = "Include $(iliad_psg) in filter on pages"
-    return (playpages(ms_choice), msg)
-end
-=#
 
 callback!(app, 
     Output("mspages", "options"), 
