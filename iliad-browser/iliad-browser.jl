@@ -7,38 +7,28 @@ if  ! isfile("Manifest.toml")
 end
 
 
+DASHBOARD_VERSION = "0.1.0"
+
+IMG_HEIGHT = 600
+
+baseiiifurl = "http://www.homermultitext.org/iipsrv"
+iiifroot = "/project/homer/pyramidal/deepzoom"
+
+ict = "http://www.homermultitext.org/ict2/?"
+
+dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex"
+
+
 using Dash
-using CitableBase, CitableText, CitableCorpus
+using CitableBase, CitableObject, CitableImage
+using CitablePhysicalText
+using CitableAnnotations
 using Unicode
 
-function playpages(siglum)
-    if siglum == "msA"
-        [(label = "12 recto", value = "12r"),
-        (label = "12 verso", value = "12v")]
-    else
-        [(label = "1 recto", value = "1r"),
-        (label = "1 verso", value = "1v")]
-    end
-end
 
-function iliadindex(psg)
-    if psg == "2.600"
-        return [
-            (label = "Venetus A", value = "msA"),
-            (label = "Venetus B", value = "msB"),
-            (label = "Escorial, Ω 1.12", value = "e4"),
-            (label = "Escorial, Υ 1.1", value = "e3")
-        ]
-    else
-        return [
-            (label = "Venetus A", value = "msA"),
-            (label = "Venetus B", value = "msB"),
-            (label = "Escorial, Ω 1.12", value = "e4"),
-            (label = "Escorial, Υ 1.1", value = "e3"),
-            (label = "British Library, Burney 86", value = "burney86")
-        ]
-    end
-end
+codices = fromcex(dataurl, Codex, UrlReader)
+iiifservice = IIIFservice(baseiiifurl, iiifroot)
+
 
 external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
 app = dash(external_stylesheets=external_stylesheets)
@@ -50,8 +40,8 @@ app.layout = html_div() do
 
     html_h6("Instructions"),
     dcc_markdown(
-        """- (Optional) Filter the manuscript selection by *Iliad* line
-- Choose a manuscript and page to view
+        """- Search for an *Iliad* line
+- Choose a page to view
         """
     ),
   
@@ -64,29 +54,13 @@ app.layout = html_div() do
         ]
     ),
 
-    html_h6("Manuscript"),
-    dcc_radioitems(
-        id = "ms",
-        options = [
-            (label = "Venetus A", value = "msA"),
-            (label = "Venetus B", value = "msB"),
-            (label = "Escorial, Ω 1.12", value = "e4"),
-            (label = "Escorial, Υ 1.1", value = "e3"),
-            (label = "British Library, Burney 86", value = "burney86")
-        ],
-        value = ""
-    ),
 
-    html_div() do
-        html_h6("Page"),
-        dcc_dropdown(id = "pg")
-    end,
-
-
-    html_div(id = "debug") 
-
+    html_h6("Results", id="results"),
+    dcc_radioitems(id = "mspages")
 
 end
+
+#=
 
 callback!(app, 
     Output("pg", "options"), 
@@ -97,14 +71,16 @@ callback!(app,
     msg = "Include $(iliad_psg) in filter on pages"
     return (playpages(ms_choice), msg)
 end
+=#
 
-#=
 callback!(app, 
-    Output("ms", "options"), 
+    Output("mspages", "options"), 
     Input("iliad", "value"),
     ) do iliad_psg
-    optlist = iliadindex(iliad_psg)
-    return optlist
+    #iliadindex(iliad_psg)
+    [
+    (label = "Match goes here", value = "URN goes here")
+    ]
 end
-=#
+
 run_server(app, "0.0.0.0", debug=true)
