@@ -6,15 +6,23 @@ if  ! isfile("Manifest.toml")
     Pkg.instantiate()
 end
 
-url = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex"
+DASHBOARD_VERSION = "0.1.0"
 
+IMG_HEIGHT = 600
+
+baseiiifurl = "http://www.homermultitext.org/iipsrv"
+iiifroot = "/project/homer/pyramidal/deepzoom"
+
+ict = "http://www.homermultitext.org/ict2/?"
+
+dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex"
 
 using Dash
 using CitableBase, CitablePhysicalText, CitableObject
 using CitableImage
 
-codices = fromcex(url, Codex, UrlReader)
-
+codices = fromcex(dataurl, Codex, UrlReader)
+iiifservice = IIIFservice(baseiiifurl, iiifroot)
 
 # Kludge until proper fix in Codex constructor...
 function msmenu(codd::Vector{Codex})
@@ -32,8 +40,21 @@ function facs(pg)
     if isnothing(pg)
         nothing
     else
+        pgurn = Cite2Urn(pg)
+        codexurn = pgurn |> dropobject
+        ms  = filter(c -> urn(c) == codexurn, codices)[1]
+        mspage = filter(p -> urn(p) == pgurn, ms.pages)[1]
+
         [
-            html_h6("Facsimile of $(pg)")
+            html_h6("Folio $(objectcomponent(pgurn))"),  
+
+            html_p(
+                "(The image is linked to a pannable/zoomable view in the HMT Image Citation Tool.)"),
+ 
+            dcc_markdown(
+                linkedMarkdownImage(ict, mspage.image, iiifservice; ht=IMG_HEIGHT, caption="$(pg)")
+            )
+       
         ]
     end
 end
@@ -54,21 +75,11 @@ function pagesmenu(ms::AbstractString)
    
 end
 
-function playpages(siglum)
-    if siglum == "msA"
-        [(label = "12 recto", value = "12r"),
-        (label = "12 verso", value = "12v")]
-    else
-        [(label = "1 recto", value = "1r"),
-        (label = "1 verso", value = "1v")]
-    end
-end
-
-
 external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
 app = dash(external_stylesheets=external_stylesheets)
 
 app.layout = html_div() do
+    dcc_markdown("*Dashboard version*: **$(DASHBOARD_VERSION)**"),
     html_h1() do 
         dcc_markdown("HMT project: simple codex facsimiles")
     end,
