@@ -83,7 +83,7 @@ function iliadindex(psg::AbstractString, indices::Vector{TextOnPage})
         push!(opting,
         (label = lbl, value = string(pgurn)))
     end
-    
+
     opting
 end
 
@@ -92,13 +92,15 @@ callback!(app,
     Output("mspages", "options"), 
     
     Input("iliad", "value"),
+    prevent_initial_call=true
     ) do iliad_psg
     msg = dcc_markdown("##### Results for $(iliad_psg)")
     optlist = iliadindex(iliad_psg, indexes)
     opts = [
     (label = "Match for $(iliad_psg) goes here", value = "URN goes here")
     ]
-    (msg, [(label = "Radios for $(length(optlist)) options", value = "")])
+    #(msg, [(label = "Radios for $(length(optlist)) options", value = "")])
+    (msg, optlist)
 end
 
 run_server(app, "0.0.0.0", debug=true)
