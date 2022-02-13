@@ -11,6 +11,8 @@ DASHBOARD_VERSION = "0.1.0"
 
 IMG_HEIGHT = 600
 
+
+
 baseiiifurl = "http://www.homermultitext.org/iipsrv"
 iiifroot = "/project/homer/pyramidal/deepzoom"
 
@@ -20,14 +22,24 @@ dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/r
 
 
 using Dash
-using CitableBase, CitableObject, CitableImage
+using HTTP
+using CitableBase, CitableObject, CitableImage, CitableText
 using CitablePhysicalText
 using CitableAnnotations
 
 
-
-codices = fromcex(dataurl, Codex, UrlReader)
+ILIAD = CtsUrn("urn:cts:greekLit:tlg0012.tlg001:")
 iiifservice = IIIFservice(baseiiifurl, iiifroot)
+
+function loadem(url::AbstractString)
+    cexsrc = HTTP.get(url).body |> String
+    codexlist = fromcex(cexsrc, Codex)
+    indexing = fromcex(cexsrc, TextOnPage)
+    (codexlist, indexing)
+end
+
+(codices, indexes) = loadem(dataurl)
+
 
 
 external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
@@ -54,6 +66,26 @@ app.layout = html_div() do
 
 end
 
+function iliadindex(psg::AbstractString, indices::Vector{TextOnPage})
+    query = addpassage(ILIAD, psg)
+    psglist = []
+    for idx in indices
+        match = filter(tpl -> urncontains(query, tpl[1]), idx) |> collect
+        push!(psglist, match)
+    end
+    flatlist = psglist |> Iterators.flatten |> collect
+    opting = []
+    for pr in flatlist
+        pgurn = pr[2]
+        pgid = objectcomponent(pgurn)
+        msid = collectioncomponent(dropversion(pgurn))
+        lbl = "Page $(pgid) in manuscript $(msid)"
+        push!(opting,
+        (label = lbl, value = string(pgurn)))
+    end
+    
+    opting
+end
 
 callback!(app, 
     Output("results", "children"), 
@@ -62,11 +94,11 @@ callback!(app,
     Input("iliad", "value"),
     ) do iliad_psg
     msg = dcc_markdown("##### Results for $(iliad_psg)")
-    #iliadindex(iliad_psg)
+    optlist = iliadindex(iliad_psg, indexes)
     opts = [
     (label = "Match for $(iliad_psg) goes here", value = "URN goes here")
     ]
-    (msg, opts)
+    (msg, [(label = "Radios for $(length(optlist)) options", value = "")])
 end
 
 run_server(app, "0.0.0.0", debug=true)
