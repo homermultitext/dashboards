@@ -44,8 +44,6 @@ function loadhmtdata(url)
     infoparts = split(libinfo.lines[1], "|")  
     (codexlist, infoparts[1])
 end
-
-
 (codices, releaseinfo) = loadhmtdata(dataurl)
 
 
