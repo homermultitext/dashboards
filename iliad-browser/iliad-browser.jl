@@ -6,19 +6,21 @@ if  ! isfile("Manifest.toml")
     Pkg.instantiate()
 end
 
+# Set an explicit path to the `assets` folder
+# on the assumption that the dashboard will be started
+# from the root of the gh repository!
+assets = joinpath(pwd(), "iliad-browser", "assets")
 
 DASHBOARD_VERSION = "0.1.0"
+DEFAULT_PORT = 8054
 
 IMG_HEIGHT = 1000
-
-
-
 baseiiifurl = "http://www.homermultitext.org/iipsrv"
 iiifroot = "/project/homer/pyramidal/deepzoom"
-
 ict = "http://www.homermultitext.org/ict2/?"
 
 dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex"
+
 
 
 using Dash
@@ -31,7 +33,7 @@ using CiteEXchange
 ILIAD = CtsUrn("urn:cts:greekLit:tlg0012.tlg001:")
 iiifservice = IIIFservice(baseiiifurl, iiifroot)
 
-function loadem(url::AbstractString)
+function loadhmtdata(url::AbstractString)
     cexsrc = HTTP.get(url).body |> String
     codexlist = fromcex(cexsrc, Codex)
     indexing = fromcex(cexsrc, TextOnPage)
@@ -40,18 +42,10 @@ function loadem(url::AbstractString)
     (codexlist, indexing, infoparts[2])
 end
 
+(codices, indexes, releaseinfo) = loadhmtdata(dataurl)
 
 
-(codices, indexes, releaseinfo) = loadem(dataurl)
-
-
-
-external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
-app = dash(external_stylesheets=external_stylesheets)
-
-#assetfolder = joinpath(pwd(), "dashboard", "assets")
-#app = dash(assets_folder = assetfolder, include_assets_files=true)
-
+app = dash(assets_folder = assets)
 
 app.layout = html_div() do
     dcc_markdown() do 
@@ -142,5 +136,5 @@ callback!(app,
     dcc_markdown(md)
 end
 
+run_server(app, "0.0.0.0", DEFAULT_PORT, debug=true)
 
-run_server(app, "0.0.0.0", debug=true)
