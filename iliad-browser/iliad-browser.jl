@@ -8,14 +8,11 @@ end
 
 
 DASHBOARD_VERSION = "0.1.0"
+DEFAULT_PORT = 8054
 
 IMG_HEIGHT = 1000
-
-
-
 baseiiifurl = "http://www.homermultitext.org/iipsrv"
 iiifroot = "/project/homer/pyramidal/deepzoom"
-
 ict = "http://www.homermultitext.org/ict2/?"
 
 dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex"
@@ -31,7 +28,7 @@ using CiteEXchange
 ILIAD = CtsUrn("urn:cts:greekLit:tlg0012.tlg001:")
 iiifservice = IIIFservice(baseiiifurl, iiifroot)
 
-function loadem(url::AbstractString)
+function loadhmtdata(url::AbstractString)
     cexsrc = HTTP.get(url).body |> String
     codexlist = fromcex(cexsrc, Codex)
     indexing = fromcex(cexsrc, TextOnPage)
@@ -40,9 +37,7 @@ function loadem(url::AbstractString)
     (codexlist, indexing, infoparts[2])
 end
 
-
-
-(codices, indexes, releaseinfo) = loadem(dataurl)
+(codices, indexes, releaseinfo) = loadhmtdata(dataurl)
 
 
 
@@ -143,4 +138,4 @@ callback!(app,
 end
 
 
-run_server(app, "0.0.0.0", debug=true)
+run_server(app, "0.0.0.0", DEFAULT_PORT, debug=true)
