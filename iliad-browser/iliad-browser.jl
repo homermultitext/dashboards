@@ -36,8 +36,8 @@ function loadem(url::AbstractString)
     codexlist = fromcex(cexsrc, Codex)
     indexing = fromcex(cexsrc, TextOnPage)
     libinfo = blocks(cexsrc, "citelibrary")[1]
-   
-    (codexlist, indexing,  libinfo.lines[1])
+    infoparts = split(libinfo.lines[1], "|")
+    (codexlist, indexing, infoparts[2])
 end
 
 
@@ -55,7 +55,9 @@ app = dash(external_stylesheets=external_stylesheets)
 
 app.layout = html_div() do
     dcc_markdown() do 
-        """*Dashboard version*: **$(DASHBOARD_VERSION)**. *$(releaseinfo)*
+        """*Dashboard version*: **$(DASHBOARD_VERSION)**. 
+        
+        *Data version*: **$(releaseinfo)**
         """
     end,
     html_h1() do 
