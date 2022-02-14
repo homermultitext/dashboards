@@ -7,6 +7,16 @@ if  ! isfile("Manifest.toml")
 end
 
 DASHBOARD_VERSION = "0.1.0"
+# Variables configuring the app:  
+#
+#  1. location  of the assets folder (CSS, etc.)
+#  2. port to run on
+# 
+# Set an explicit path to the `assets` folder
+# on the assumption that the dashboard will be started
+# from the root of the gh repository!
+assets = joinpath(pwd(), "iliad-browser", "assets")
+DEFAULT_PORT = 8051
 
 IMG_HEIGHT = 600
 
@@ -20,11 +30,24 @@ dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/r
 using Dash
 using CitableBase, CitablePhysicalText, CitableObject
 using CitableImage
+using CiteEXchange
+using Downloads
 
-codices = fromcex(dataurl, Codex, UrlReader)
 iiifservice = IIIFservice(baseiiifurl, iiifroot)
 
-# Kludge until proper fix in Codex constructor...
+""" Extract codices and release info from HMT publication.
+"""
+function loadhmtdata(url)
+    cexsrc = Downloads.download(url) |> read |> String
+    codexlist = fromcex(cexsrc, Codex)
+    libinfo = blocks(cexsrc, "citelibrary")[1]
+    infoparts = split(libinfo.lines[1], "|")  
+    (codexlist, infoparts[1])
+end
+(codices, releaseinfo) = loadhmtdata(dataurl)
+
+
+# Kludge until bug in Codex constructor losing labelling info (!) is fixed...
 function msmenu(codd::Vector{Codex})
     opts = []
     for c in codd
@@ -36,6 +59,8 @@ function msmenu(codd::Vector{Codex})
 end
 defaultms = msmenu(codices)[1][2]
 
+
+"""Create HTML facsimile view of specified MS page."""
 function facs(pg)
     if isnothing(pg)
         nothing
@@ -59,8 +84,10 @@ function facs(pg)
     end
 end
 
+"""Find pages for specified manuscript and format option
+pairs to use in pages menu.
+"""
 function pagesmenu(ms::AbstractString)
-   
     u = Cite2Urn(ms)
    
     codex = filter(c -> urn(c) == u, codices)[1]
@@ -71,15 +98,17 @@ function pagesmenu(ms::AbstractString)
         push!(opts, (label = lbl, value = val))
     end
     opts
- 
-   
 end
 
-external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
-app = dash(external_stylesheets=external_stylesheets)
+app =  dash(assets_folder = assets)
 
 app.layout = html_div() do
-    dcc_markdown("*Dashboard version*: **$(DASHBOARD_VERSION)**"),
+    dcc_markdown("""
+    *Dashboard version*: **$(DASHBOARD_VERSION)**
+    
+          
+    *Data version*: **$(releaseinfo)**
+    """),
     html_h1() do 
         dcc_markdown("HMT project: simple codex facsimiles")
     end,
@@ -103,17 +132,13 @@ app.layout = html_div() do
         dcc_dropdown(id = "pg")
     end,
 
-    html_div(id = "display"),
-    html_div(id = "debug") 
-
-
+    html_div(id = "display")
 end
 
 callback!(app, 
     Output("pg", "options"), 
     Input("ms", "value"),
     ) do  ms_choice
-
     return pagesmenu(ms_choice)
 end
 
@@ -122,9 +147,7 @@ callback!(app,
     Output("display", "children"), 
     Input("pg", "value")
     ) do pg_choice
-
     return facs(pg_choice)
-    #return playpages(ms_choice)
 end
 
-run_server(app, "0.0.0.0", debug=true)
+run_server(app, "0.0.0.0", DEFAULT_PORT, debug=true)
