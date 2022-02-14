@@ -7,7 +7,7 @@ This repository hosts interactive dashboards written wtih [Dash.jl](https://dash
 1. `alpha-search/alpha-search.jl` (default port: `8050`):  simple alphabetic search of Greek texts in the HMT archive.  Filter by manuscript and/or text.
 1. `codices/codex-browser.jl`: visual browser of photographed and documented codices in the HMT archive.
 1. `authlists/authlists.jl`:  searchable tables of authority lists
-1. `iliad-browser/iliad-browser.jl`: browser manuscript images by *Iliad* reference.
+1. `iliad-browser/iliad-browser.jl` (default port: `8054`): browser manuscript images by *Iliad* reference.
 
 
 
