@@ -6,6 +6,7 @@ This repository hosts interactive dashboards written wtih [Dash.jl](https://dash
 
 1. `alpha-search/alpha-search.jl`:  simple alphabetic search of Greek texts in the HMT archive.  Filter by manuscript and/or text.
 2. `codices/codex-browser.jl`: visual browser of photographed and documented codices in the HMT archive.
+3. `authlists/authlists.jl`:  searchable tables of authority lists
 
 ## Prequisites
 
