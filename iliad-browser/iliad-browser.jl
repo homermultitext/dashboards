@@ -6,13 +6,18 @@ if  ! isfile("Manifest.toml")
     Pkg.instantiate()
 end
 
+DASHBOARD_VERSION = "0.1.0"
+
+# Variables configuring the app:  
+#
+#  1. location  of the assets folder (CSS, etc.)
+#  2. port to run on
+# 
 # Set an explicit path to the `assets` folder
 # on the assumption that the dashboard will be started
 # from the root of the gh repository!
 assets = joinpath(pwd(), "iliad-browser", "assets")
-
-DASHBOARD_VERSION = "0.1.0"
-DEFAULT_PORT = 8054
+DEFAULT_PORT = 8053
 
 IMG_HEIGHT = 1000
 baseiiifurl = "http://www.homermultitext.org/iipsrv"
@@ -20,8 +25,6 @@ iiifroot = "/project/homer/pyramidal/deepzoom"
 ict = "http://www.homermultitext.org/ict2/?"
 
 dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex"
-
-
 
 using Dash
 using HTTP
@@ -33,6 +36,9 @@ using CiteEXchange
 ILIAD = CtsUrn("urn:cts:greekLit:tlg0012.tlg001:")
 iiifservice = IIIFservice(baseiiifurl, iiifroot)
 
+""" Extract codices, *Iliad* to page indexing,
+and release info from HMT publication.
+"""
 function loadhmtdata(url::AbstractString)
     cexsrc = HTTP.get(url).body |> String
     codexlist = fromcex(cexsrc, Codex)
