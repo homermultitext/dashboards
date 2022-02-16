@@ -5,7 +5,7 @@ if  ! isfile("Manifest.toml")
     Pkg.activate(".")
     Pkg.instantiate()
 end
-PORT = 9191
+
 
 DASHBOARD_VERSION = "0.1.0"
 # Variables configuring the app:  
@@ -17,7 +17,7 @@ DASHBOARD_VERSION = "0.1.0"
 # on the assumption that the dashboard will be started
 # from the root of the gh repository!
 assets = joinpath(pwd(), "iliad-browser", "assets")
-DEFAULT_PORT = 8059
+DEFAULT_PORT = 8051
 
 IMG_HEIGHT = 600
 
@@ -272,6 +272,4 @@ callback!(app,
 end
 
 
-
-#DEFAULT_PORT
-run_server(app, "0.0.0.0", PORT, debug=true)
+run_server(app, "0.0.0.0", DEFAULT_PORT, debug=true)
