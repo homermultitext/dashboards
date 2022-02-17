@@ -17,7 +17,7 @@ DASHBOARD_VERSION = "0.1.0"
 # on the assumption that the dashboard will be started
 # from the root of the gh repository!
 assets = joinpath(pwd(), "iliad-browser", "assets")
-DEFAULT_PORT = 8051
+DEFAULT_PORT = 8054
 
 IMG_HEIGHT = 600
 
