@@ -7,7 +7,7 @@ if  ! isfile("Manifest.toml")
 end
 
 
-DASHBOARD_VERSION = "0.1.1"
+DASHBOARD_VERSION = "0.1.2"
 # Variables configuring the app:  
 #
 #  1. location  of the assets folder (CSS, etc.)
@@ -109,7 +109,7 @@ end
 Assume one Codex per file.
 """
 function localcodices()
-    basedir = joinpath(pwd(), "codices", "codices")
+    basedir = joinpath(pwd(), "codices+local", "codices")
     filenames = readdir(basedir)
     codexlist = Codex[]
     for f in filter(f -> endswith(f, "cex"), filenames)        
@@ -167,13 +167,9 @@ end
 """Create menu of manuscripts based on user's choice of source."""
 function msmenu(srcchoice, codexlist)
     if srcchoice == "hmt"
-        msmenuopts(codexlist)
+        codexlist |> msmenuopts
     elseif srcchoice == "local"
-        localmss = localcodices()
-        #[(label = "local only: $(localmss) codices", value = "local")]
-        msmenuopts(localmss)
-    else
-        [(label = "BOTH", value = "both")]
+       localcodices() |> msmenuopts
     end
 end
 
@@ -226,7 +222,7 @@ function facs(datasrc, pg, codexlist)
         imglink = ""
         if islocal(codexurn, codexlist)
             fname = mspage.image |> objectcomponent
-            imgfile = joinpath(pwd(), "codices", "images", fname)
+            imgfile = joinpath(pwd(), "codices+local", "images", fname)
             imglink = graphforfile(imgfile)
            
         else
