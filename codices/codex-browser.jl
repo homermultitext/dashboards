@@ -6,7 +6,7 @@ if  ! isfile("Manifest.toml")
     Pkg.instantiate()
 end
 
-DASHBOARD_VERSION = "0.1.0"
+DASHBOARD_VERSION = "0.1.1"
 # Variables configuring the app:  
 #
 #  1. location  of the assets folder (CSS, etc.)
@@ -42,7 +42,7 @@ function loadhmtdata(url)
     codexlist = fromcex(cexsrc, Codex)
     libinfo = blocks(cexsrc, "citelibrary")[1]
     infoparts = split(libinfo.lines[1], "|")  
-    (codexlist, infoparts[1])
+    (codexlist, infoparts[2])
 end
 (codices, releaseinfo) = loadhmtdata(dataurl)
 
