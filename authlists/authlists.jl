@@ -7,7 +7,7 @@ if  ! isfile("Manifest.toml")
 end
 
 
-DASHBOARD_VERSION = "0.1.0"
+DASHBOARD_VERSION = "0.2.0"
 # Variables configuring the app:  
 #
 #  1. location  of the assets folder (CSS, etc.)
@@ -31,7 +31,11 @@ df = CSV.File(Downloads.download(NAMES_URL), delim = "|", header = 2) |> DataFra
 
 
 external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
-app = dash(external_stylesheets=external_stylesheets)
+app = if haskey(ENV, "URLBASE")
+    dash(assets_folder = assets, url_base_pathname = ENV["URLBASE"])
+else 
+    dash(assets_folder = assets)    
+end
 
 app.layout = html_div() do
     dcc_markdown("""
