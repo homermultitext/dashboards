@@ -6,7 +6,7 @@ if  ! isfile("Manifest.toml")
     Pkg.instantiate()
 end
 
-DASHBOARD_VERSION = "0.1.0"
+DASHBOARD_VERSION = "0.2.0"
 
 # Variables configuring the app:  
 #
@@ -51,7 +51,11 @@ end
 (codices, indexes, releaseinfo) = loadhmtdata(dataurl)
 
 
-app = dash(assets_folder = assets)
+app = if haskey(ENV, "URLBASE")
+    dash(assets_folder = assets, url_base_pathname = ENV["URLBASE"])
+else 
+    dash(assets_folder = assets)    
+end
 
 app.layout = html_div() do
     dcc_markdown() do 

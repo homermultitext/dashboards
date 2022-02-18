@@ -6,7 +6,7 @@ if  ! isfile("Manifest.toml")
     Pkg.instantiate()
 end
 
-DASHBOARD_VERSION = "0.1.1"
+DASHBOARD_VERSION = "0.2.0"
 # Variables configuring the app:  
 #
 #  1. location  of the assets folder (CSS, etc.)
@@ -100,7 +100,11 @@ function pagesmenu(ms::AbstractString)
     opts
 end
 
-app =  dash(assets_folder = assets)
+app = if haskey(ENV, "URLBASE")
+    dash(assets_folder = assets, url_base_pathname = ENV["URLBASE"])
+else 
+    dash(assets_folder = assets)    
+end
 
 app.layout = html_div() do
     dcc_markdown("""
