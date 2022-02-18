@@ -1,15 +1,3 @@
-doc = """Start `alpha-search` dashboard.
-
-Usage:
-  alpha-search.jl
-  alpha-search.jl --urlbase=DIR
-
-Options:
-  -h --help     Show this screen.
-  --version     Show version.
-  --urlbase=DIR         Base path for web URL.
-"""
-
 # Run this dashboard from the root of the
 # github repository:
 using Pkg
@@ -17,10 +5,8 @@ if  ! isfile("Manifest.toml")
     Pkg.activate(".")
     Pkg.instantiate()
 end
-using DocOpt
-DASHBOARD_VERSION = "0.2.0"
-args = docopt(doc, version=VersionNumber(DASHBOARD_VERSION))
 
+DASHBOARD_VERSION = "0.2.0"
 
 # Variables configuring the app:  
 #
@@ -30,7 +16,7 @@ args = docopt(doc, version=VersionNumber(DASHBOARD_VERSION))
 # Set an explicit path to the `assets` folder
 # on the assumption that the dashboard will be started
 # from the root of the gh repository!
-assets = joinpath(pwd(), "iliad-browser", "assets")
+assets = joinpath(pwd(), "alpha-search", "assets")
 DEFAULT_PORT = 8050
 
 using Dash
@@ -65,11 +51,10 @@ end
 
 (catalog, normalizededition, releaseinfo) = loadhmtdata(dataurl)
 
-
-app = if isnothing(args["--urlbase"]) 
-    dash(assets_folder = assets)
-else
-    dash(assets_folder = assets, url_base_pathname = args["--urlbase"])
+app = if haskey(ENV, "URLBASE")
+    dash(assets_folder = assets, url_base_pathname = ENV["URLBASE"])
+else 
+    dash(assets_folder = assets)    
 end
 
 app.layout = html_div() do
