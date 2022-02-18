@@ -15,7 +15,7 @@ DASHBOARD_VERSION = "0.2.1"
 # Set an explicit path to the `assets` folder
 # on the assumption that the dashboard will be started
 # from the root of the gh repository!
-assets = joinpath(pwd(), "codex-browser", "assets")
+assets = joinpath(pwd(), "codices", "assets")
 DEFAULT_PORT = 8051
 
 IMG_HEIGHT = 600
