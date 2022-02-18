@@ -7,7 +7,7 @@ if  ! isfile("Manifest.toml")
 end
 
 
-DASHBOARD_VERSION = "0.2.0"
+DASHBOARD_VERSION = "0.2.1"
 # Variables configuring the app:  
 #
 #  1. location  of the assets folder (CSS, etc.)
@@ -16,7 +16,7 @@ DASHBOARD_VERSION = "0.2.0"
 # Set an explicit path to the `assets` folder
 # on the assumption that the dashboard will be started
 # from the root of the gh repository!
-assets = joinpath(pwd(), "iliad-browser", "assets")
+assets = joinpath(pwd(), "authlists", "assets")
 DEFAULT_PORT = 8052
 NAMES_URL = "https://raw.githubusercontent.com/homermultitext/hmt-authlists/master/data/hmtnames.cex"
 
@@ -28,9 +28,6 @@ df = CSV.File(Downloads.download(NAMES_URL), delim = "|", header = 2) |> DataFra
 
 
 
-
-
-external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
 app = if haskey(ENV, "URLBASE")
     dash(assets_folder = assets, url_base_pathname = ENV["URLBASE"])
 else 
