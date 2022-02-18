@@ -6,7 +6,7 @@ if  ! isfile("Manifest.toml")
     Pkg.instantiate()
 end
 
-DASHBOARD_VERSION = "0.2.0"
+DASHBOARD_VERSION = "0.2.1"
 # Variables configuring the app:  
 #
 #  1. location  of the assets folder (CSS, etc.)
@@ -15,7 +15,7 @@ DASHBOARD_VERSION = "0.2.0"
 # Set an explicit path to the `assets` folder
 # on the assumption that the dashboard will be started
 # from the root of the gh repository!
-assets = joinpath(pwd(), "iliad-browser", "assets")
+assets = joinpath(pwd(), "codex-browser", "assets")
 DEFAULT_PORT = 8051
 
 IMG_HEIGHT = 600
