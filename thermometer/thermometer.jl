@@ -26,6 +26,7 @@ using CitableBase, CitableText, CitableCorpus
 using CiteEXchange
 using Downloads
 using Unicode
+using Plots
 
 """ Extract text catalog, normalized editions of texts,
 and release info from HMT publication.
