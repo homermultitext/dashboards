@@ -15,14 +15,17 @@ DASHBOARD_VERSION = "0.1.0"
 # Set an explicit path to the `assets` folder
 # on the assumption that the dashboard will be started
 # from the root of the gh repository!
-assets = joinpath(pwd(), "alpha-search", "assets")
+assets = joinpath(pwd(), "thermometer", "assets")
 DEFAULT_PORT = 8059
 
 dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex"
 
 
 using Dash
+using CitableBase, CitableText, CitableCorpus
+using CiteEXchange
 using Downloads
+using Unicode
 
 """ Extract text catalog, normalized editions of texts,
 and release info from HMT publication.
