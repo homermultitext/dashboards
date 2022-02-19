@@ -1,3 +1,7 @@
+# CHECK OUT PLOTTING HERE:
+# https://dash.plotly.com/julia/interactive-graphing
+
+#
 # Run this dashboard from the root of the
 # github repository:
 using Pkg
