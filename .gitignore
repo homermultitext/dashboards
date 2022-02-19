@@ -2,3 +2,7 @@ Manifest.toml
 *~
 .vscode/
 scratch/
+_site/
+.jekyll-cache/
+Gemfile.lock
+docs/Gemfile
