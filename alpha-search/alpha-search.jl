@@ -6,7 +6,7 @@ if  ! isfile("Manifest.toml")
     Pkg.instantiate()
 end
 
-DASHBOARD_VERSION = "0.2.0"
+DASHBOARD_VERSION = "0.2.1"
 
 # Variables configuring the app:  
 #
@@ -29,7 +29,7 @@ using Unicode
 # Search on strings of MIN_LENGTH or more chars:
 MIN_LENGTH = 3
 
-dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/release-candidates/hmt-current.cex"
+dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex"
 
 """ Extract text catalog, normalized editions of texts,
 and release info from HMT publication.
