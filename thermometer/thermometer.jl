@@ -137,8 +137,9 @@ Earlier releases are available in subdirectories of `archive/releases-cex` by ye
 
 Releases in 2022 are sequentially named `hmt-2022`**ID**`.cex` where **ID** is a successive letter of the alphabet.
 
-
 """
+
+
 app = if haskey(ENV, "URLBASE")
     dash(assets_folder = assets, url_base_pathname = ENV["URLBASE"])
 else 
@@ -164,11 +165,7 @@ app.layout = html_div() do
 
     Explore manuscripts with the [codex-browser dashboard](https://www.homermultitext.org/codex-browser/).
 
-
-    ### Quire marks
-
-    (TBA)
-    """),
+"""),
 
 
     html_h2("Indexes to manuscripts"),
@@ -187,10 +184,14 @@ app.layout = html_div() do
     Explore edited texts with the [alpha-search dashboard](https://www.homermultitext.org/alpha-search/).
     """),
 
+    dcc_markdown("""## Forthcoming   
 
+### Manuscripts
 
+#### Quire marks
 
-    dcc_markdown("""
+(TBA)
+
 ### Contents of texts
 
 #### Named figures
@@ -212,8 +213,11 @@ app.layout = html_div() do
 
 (TBA)
 
+##### Numbered simile markers
 
-    """)
+(TBA)
+
+""")
 end
 
 run_server(app, "0.0.0.0", DEFAULT_PORT, debug=true)
