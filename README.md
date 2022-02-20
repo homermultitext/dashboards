@@ -12,7 +12,7 @@ This repository hosts interactive dashboards written wtih [Dash.jl](https://dash
 1. `iliad-browser/iliad-browser.jl` (default port: `8053`): browser manuscript images by *Iliad* reference.
 
 
-## Plannned dashboards (in progress work)
+## Plannned dashboards (work in progress)
 
 1. `lightbox/lightbox.jl` (default port: `8054`): paged browsing of image collections.
 
