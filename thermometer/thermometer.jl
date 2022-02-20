@@ -1,7 +1,3 @@
-# CHECK OUT PLOTTING HERE:
-# https://dash.plotly.com/julia/interactive-graphing
-
-#
 # Run this dashboard from the root of the
 # github repository:
 using Pkg
@@ -74,6 +70,9 @@ function textlist(textcatalog)
     join(lines, "\n")
 end
 
+"""Compose a Plotly figure graphing coverage by book
+of Iliad indexing for different MSS.
+"""
 function indexgraph(indices)
     data = []
     for idx in indexes
@@ -121,7 +120,6 @@ function indexgraph(indices)
 
     )
     Plot(barlist, graphlayout)
-    
 end
 
 
@@ -139,6 +137,26 @@ Releases in 2022 are sequentially named `hmt-2022`**ID**`.cex` where **ID** is a
 
 """
 
+function sums(mslist, normededitions, textcat)
+    pagecount = map(ms -> length(ms), mslist) |> sum
+    mscount = length(mslist)
+
+    iliadlines = filter(psg -> startswith(workcomponent(psg.urn), "tlg0012.tlg001"), normededitions) |> length
+
+
+    scholia = filter(psg -> startswith(workcomponent(psg.urn), "tlg5026"), normededitions)
+    commentcount = filter(psg-> endswith(passagecomponent(psg.urn), "comment"),  scholia) |> length
+    wordcount = map(psg -> split(psg.text) |> length, normalizededition) |> sum
+    doccount = length(textcat)
+    """The current release of the HMT archive publishes:
+    
+- **$(pagecount) pages** in **$(mscount) manuscripts**
+- **$(wordcount) words** in diplomatic editions of **$(doccount) cataloged documents**
+- diplomatic and normalized editions of **$(iliadlines) lines** of the *Iliad*
+- diplomatic and normalized editions of **$(commentcount) scholia**
+
+"""    
+end
 
 app = if haskey(ENV, "URLBASE")
     dash(assets_folder = assets, url_base_pathname = ENV["URLBASE"])
@@ -151,6 +169,11 @@ app.layout = html_div() do
 
 
     html_h1("Overview of contents: $(releaseinfo)"),
+    dcc_markdown(
+        sums(codices, normalizededition, textcatalog)
+    ),
+
+
     dcc_markdown(intro),
 
 
@@ -183,6 +206,8 @@ app.layout = html_div() do
     
     Explore edited texts with the [alpha-search dashboard](https://www.homermultitext.org/alpha-search/).
     """),
+
+
 
     dcc_markdown("""## Forthcoming   
 
