@@ -7,7 +7,7 @@
 using Pkg
 if  ! isfile("Manifest.toml")
     Pkg.activate(".")
-    Pkg.instantiate()
+    Pkg.instantiate(    )
 end
 DASHBOARD_VERSION = "0.1.0"
 
@@ -60,7 +60,8 @@ end
 
 """Format title of a text catalog entry in markdown."""
 function format_title(txt)
-    txt.group * ", *", txt.work * "* (", txt.version, ")"
+    #txt.group * ", *", txt.work * "* (", txt.version, ")"
+    string(txt)
 end
 
 """Format catalog entries as markdown list"""
@@ -84,23 +85,62 @@ end
 app.layout = html_div() do
     html_h1("$(releaseinfo): overview of contents"),
     dcc_markdown("""
-    here's info
+    
     """),
     html_h2("Images"),
     "TBA",
     html_h2("Manuscripts"),
     dcc_markdown("""
     **$(length(codices))** cataloged manuscripts
+
+
+    Explore manuscripts with the [codex-browser dashboard](https://www.homermultitext.org/codex-browser/).
+
+
+    ### Quire marks
+
+    (TBA)
     """),
     html_h2("Indexes to manuscripts"),
     indexgraph(),
+    dcc_markdown("""
+    
+    Explore indexed manuscripts with the [iliad-browser dashboard](https://www.homermultitext.org/iliad-browser/).
+    """),
     html_h2("Editing"),
     dcc_markdown("""
     $(length(textcatalog)) texts.
 
 
     $(textlist(textcatalog))
-    """)   
+    
+    Explore edited texts with the [alpha-search dashboard](https://www.homermultitext.org/alpha-search/).
+    """),
+
+    dcc_markdown("""
+### Contents of texts
+
+#### Named figures
+
+(TBA)
+
+#### Named places
+
+(TBA)
+
+#### Peoples and ethnic groups
+
+(TBA)
+
+#### The Venetus A manuscript
+
+
+##### Critical signs
+
+(TBA)
+
+
+    """)
 end
 
 run_server(app, "0.0.0.0", DEFAULT_PORT, debug=true)
