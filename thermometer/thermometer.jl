@@ -108,11 +108,24 @@ for k in keys(grp)
 	push!(counts, (ms = k[1], bk = k[2], count = length(grp[k])))
 end
 
+
 mss = map(trpl -> trpl[1], counts) |> unique
+bks = collect(1:24) .|> string
 
 dataseries = Dict()
-for ms in mss
-
+for ms in mss   
+    padded = []
+    for bk in bks
+        extract = filter(trp -> trp[1] == ms && trp[2] == bk, counts)
+        isempty(extract) ? push!(padded, (ms = ms,bk = bk,count = 0)) : push!(padded, extract[1])
+    end
+    dataseries[ms] = Tables.columntable(padded)
 end
 
+barlist = GenericTrace{Dict{Symbol, Any}}[]
+for k in keys(dataseries)
+    tbl = dataseries[k]
+    push!(barlist, bar(name=k, x=tbl.bk, y=tbl.count))
+end
+plot(barlist)
 =#
