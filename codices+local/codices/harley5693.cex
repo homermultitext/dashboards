@@ -1,0 +1,20 @@
+#!datamodels
+Collection|Model|Label|Description
+urn:cite2:citebl:harley5693pages.v1:|urn:cite2:hmt:datamodels.v1:codexmodel|Model of British Library, Harley 5693|British Library, Harley 5693
+
+#!citecollections
+URN|Description|Labelling property|Ordering property|License
+urn:cite2:citebl:harley5693pages.v1:|British Library, Harley 5693|urn:cite2:citebl:harley5693pages.v1.label:|urn:cite2:citebl:harley5693pages.v1.sequence:|CC-attribution-share-alike
+
+#!citeproperties
+Property|Label|Type|Authority list
+urn:cite2:citebl:harley5693pages.v1.sequence:|Page sequence|Number|
+urn:cite2:citebl:harley5693pages.v1.image:|TBS image|Cite2Urn|
+urn:cite2:citebl:harley5693pages.v1.urn:|URN|Cite2Urn|
+urn:cite2:citebl:harley5693pages.v1.rv:|Recto or Verso|String|recto,verso
+urn:cite2:citebl:harley5693pages.v1.label:|Label|String|
+
+
+#!citedata
+sequence|image|urn|rv|label
+4|urn:cite2:citebl:harley5693img.v1:harley5693_002r.jpg|urn:cite2:citebl:harley5693pages.v1:2r|recto|British Library, Harley 5693, folio 2 recto

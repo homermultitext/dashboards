@@ -1,0 +1,1 @@
+You can add image data to this direcetory.

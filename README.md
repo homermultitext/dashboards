@@ -4,15 +4,21 @@ This repository hosts interactive dashboards written wtih [Dash.jl](https://dash
 
 ## Available dashboards
 
-1. `alpha-search/alpha-search.jl`:  simple alphabetic search of Greek texts in the HMT archive.  Filter by manuscript and/or text.
-2. `codices/codex-browser.jl`: visual browser of photographed and documented codices in the HMT archive.
+1. `alpha-search/alpha-search.jl` (default port: `8050`):  simple alphabetic search of Greek texts in the HMT archive.  Filter by manuscript and/or text.
+1. `codex-browser/codex-browser.jl` (default port: `8051`): visual browser of photographed and documented codices in the HMT archive.
+    - `codices+local/codex-browser.jl` (default port: `8054`): a version of the `codex-browser.jl` that allows you to include a collection of cataloged local files
+1. `authlists/authlists.jl` (default port: `8052`):  searchable tables of authority lists
+1. `iliad-browser/iliad-browser.jl` (default port: `8053`): browser manuscript images by *Iliad* reference.
 
-## Prequisites
+
+
+## Running the dashboards
+
+### Prequisites
 
 - internet access (the current dashboards download a release of the HMT archive; future versions may allow you to load data from a local file)
 - [Julia](https://julialang.org)
 
-## Running the dashboards
 
 The dashboards expect to be started from the root directory of this repository.  You can start them from the command line or from [Visual Studio Code](https://code.visualstudio.com).
 
@@ -30,4 +36,4 @@ Make sure you have the Julia plugin installed.
 
 ### Viewing the dashboard
 
-By default, the dashboards run on port 8050: open a web browser to  [http://0.0.0.0:8050](http://0.0.0.0:8050).
+By default, the dashboards run on the port number listed above.  Open a browser to `http://localhost:PORT_NUMBER`.

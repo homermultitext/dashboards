@@ -6,24 +6,65 @@ if  ! isfile("Manifest.toml")
     Pkg.instantiate()
 end
 
+DASHBOARD_VERSION = "0.2.1"
+
+# Variables configuring the app:  
+#
+#  1. location  of the assets folder (CSS, etc.)
+#  2. port to run on
+# 
+# Set an explicit path to the `assets` folder
+# on the assumption that the dashboard will be started
+# from the root of the gh repository!
+assets = joinpath(pwd(), "alpha-search", "assets")
+DEFAULT_PORT = 8050
+
 using Dash
 using CitableBase, CitableText, CitableCorpus
+using CiteEXchange
+using Downloads
 using Unicode
 
+
+# Search on strings of MIN_LENGTH or more chars:
 MIN_LENGTH = 3
 
-url = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/release-candidates/hmt-current.cex"
+dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex"
 
+""" Extract text catalog, normalized editions of texts,
+and release info from HMT publication.
+"""
+function loadhmtdata(url)
+    cexsrc = Downloads.download(url) |> read |> String
+    textcatalog = fromcex(cexsrc, TextCatalogCollection)
+    corpus = fromcex(cexsrc, CitableTextCorpus)
 
-catalog = fromcex(url, TextCatalogCollection, UrlReader)
-normalizededition = filter(psg -> endswith(workcomponent(psg.urn), "normalized"),
-    fromcex(url, CitableTextCorpus, UrlReader).passages)
+    normalizedtexts = filter(
+        psg -> endswith(workcomponent(psg.urn), "normalized"),
+        corpus.passages)
 
-external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
-app = dash(external_stylesheets=external_stylesheets)
+    libinfo = blocks(cexsrc, "citelibrary")[1]
+    infoparts = split(libinfo.lines[1], "|")    
 
+    (textcatalog, normalizedtexts, infoparts[2])
+end
+
+(catalog, normalizededition, releaseinfo) = loadhmtdata(dataurl)
+
+app = if haskey(ENV, "URLBASE")
+    dash(assets_folder = assets, url_base_pathname = ENV["URLBASE"])
+else 
+    dash(assets_folder = assets)    
+end
 
 app.layout = html_div() do
+
+    dcc_markdown() do 
+        """*Dashboard version*: **$(DASHBOARD_VERSION)**. 
+        
+        *Data version*: **$(releaseinfo)**
+        """
+    end,
     html_h1("HMT project: search corpus by alphabetic string"),
     html_blockquote() do
         html_ul() do
@@ -106,64 +147,81 @@ function isiliad(u::CtsUrn)
 	urncontains(CtsUrn("urn:cts:greekLit:tlg0012.tlg001:"), u)
 end
 
-callback!(app, 
+"""Select selection of texts for requested MS."""
+function select_texts(psgs, siglum, txt)
+    txts_for_ms = if siglum == "all"
+		psgs
+	elseif siglum == "va"
+		msascholia = filter(p -> startswith(workcomponent(p.urn), "tlg5026.msA"), psgs)
+		msailiad = filter(p -> startswith(workcomponent(p.urn), "tlg0012.tlg001.msA"), psgs)
+		vcat(msascholia, msailiad)
+	end
+
+    if txt == "all"
+		txts_for_ms
+	elseif txt == "iliad"
+		iliadurn = CtsUrn("urn:cts:greekLit:tlg0012.tlg001:")
+		filter(p -> urncontains(iliadurn, p.urn), txts_for_ms)
+	elseif txt == "scholia"
+		scholiaurn = CtsUrn("urn:cts:greekLit:tlg5026:")
+		filter(p -> urncontains(scholiaurn, p.urn), txts_for_ms)
+	end
+end
+
+
+"""Find text passages in `psgs` matching `queryterm`, 
+and format markdown display of results.
+"""
+function displaymarkdown(psgs, queryterm)
+    # Find indices for matches in alphabetic version,
+    alphabeticstrings = map(psg -> Unicode.normalize(psg.text, stripmark=true) |> lowercase, psgs)
+    # use fully formatted version:
+    indices = findall(contains(lowercase(queryterm)), alphabeticstrings)
+    hits = []
+    for i in indices
+        push!(hits, psgs[i])
+    end
+    summary = "## $(length(hits)) matches for **$(queryterm)**\n\n(Searched $(length(psgs)) citable passages.)"
+    #summary * "\n\n" * formatpsgs(hits)
+    summary * "\n\n" * formatpsgs(hits)
+
+end
+
+function formatpsgs(psglist)
+    # Format results in markdown:
+    currentwork = nothing
+    mdlines = []
+    for psg in psglist
+        newwork = droppassage(psg.urn)
+        if newwork != currentwork
+            title = titleforurn(newwork, catalog)
+            push!(mdlines, "#### $(title)")
+            currentwork = newwork
+        end
+        push!(mdlines, formatpassage(psg))
+    end
+    join(mdlines, "\n\n")
+end
+
+callback!(
+    app, 
     Output("results", "children"), 
     Input("query", "value"),
     Input("ms", "value"),
     Input("txt", "value"),
     ) do query_value, ms_value, txt_value
-
-
-    selected_mss = if ms_value == "all"
-		normalizededition
-	elseif ms_value == "va"
-		msascholia = filter(p -> startswith(workcomponent(p.urn), "tlg5026.msA"), normalizededition)
-		msailiad = filter(p -> startswith(workcomponent(p.urn), "tlg0012.tlg001.msA"), normalizededition)
-		vcat(msascholia, msailiad)
-	end
     
-    selected_passages = if txt_value == "all"
-		selected_mss
-	elseif txt_value == "iliad"
-		iliadurn = CtsUrn("urn:cts:greekLit:tlg0012.tlg001:")
-		filter(p -> urncontains(iliadurn, p.urn), selected_mss)
-	elseif txt_value == "scholia"
-		scholiaurn = CtsUrn("urn:cts:greekLit:tlg5026:")
-		filter(p -> urncontains(scholiaurn, p.urn), selected_mss)
-	end
-   
-    if isnothing(selected_passages)
-        ""
-    elseif length(query_value) > 2
-        # Find indices for matches in alphabetic version,
-        # use fully formatted version:
-        alphabeticstrings = map(psg -> Unicode.normalize(psg.text, stripmark=true) |> lowercase, selected_passages)
-        indices = findall(contains(lowercase(query_value)), alphabeticstrings)
-        hits = []
-		for i in indices
-			push!(hits, selected_passages[i])
-		end
-        summary = "## $(length(hits)) matches for **$(query_value)**\n\n$(length(selected_passages)) citable passages in $(ms_value)."
+    passages_for_ms = select_texts(normalizededition, ms_value, txt_value)
 
-        # Format results in markdown:
-        currentwork = nothing
-		mdlines = [summary]
-		for psg in hits
-			newwork = droppassage(psg.urn)
-			if newwork != currentwork
-				title = titleforurn(newwork, catalog)
-				push!(mdlines, "#### $(title)")
-				currentwork = newwork
-			end
-			push!(mdlines, formatpassage(psg))
-		end
-		mdcontent = join(mdlines, "\n\n")
+    if isnothing(passages_for_ms)
+        "(no matches)"
+    elseif length(query_value) >= MIN_LENGTH
+        mdcontent = displaymarkdown(passages_for_ms, query_value)
         dcc_markdown(mdcontent)
-      
+        
     else
-        "Selected corpus has $(length(selected_passages)) passages. "
-
+        "Selected corpus has $(length(passages_for_ms)) passages. "
     end
 end
 
-run_server(app, "0.0.0.0", debug=true)
+run_server(app, "0.0.0.0", DEFAULT_PORT, debug=true)

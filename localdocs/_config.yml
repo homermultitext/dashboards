@@ -1,0 +1,8 @@
+theme: "just-the-docs"
+
+aux_links:
+  "Homer Multitext project":
+    - "https://www.homermultitext.org/"
+
+
+footer_content: "Source code: <https://github.com/homermultitext/dashboards>"
