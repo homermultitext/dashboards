@@ -122,6 +122,7 @@ else
 end
 
 app.layout = html_div() do
+    dcc_markdown("*Dashboard version*: **$(DASHBOARD_VERSION)**"),
     html_h1("$(releaseinfo): overview of contents"),
     dcc_markdown("""
     
