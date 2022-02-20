@@ -20,24 +20,29 @@ DASHBOARD_VERSION = "0.1.0"
 # on the assumption that the dashboard will be started
 # from the root of the gh repository!
 assets = joinpath(pwd(), "thermometer", "assets")
-DEFAULT_PORT = 8059
+DEFAULT_PORT = 8060
 
 dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex"
 
 
 using Dash
 using CitableBase, CitableText, CitableCorpus
+using CitablePhysicalText
+using CitableAnnotations
 using CiteEXchange
 using Downloads
 using Unicode
 using Plots
+
 
 """ Extract text catalog, normalized editions of texts,
 and release info from HMT publication.
 """
 function loadhmtdata(url)
     cexsrc = Downloads.download(url) |> read |> String
-    textcatalog = fromcex(cexsrc, TextCatalogCollection)
+    mss = fromcex(cexsrc, Codex)
+
+    ctscatalog = fromcex(cexsrc, TextCatalogCollection)
     corpus = fromcex(cexsrc, CitableTextCorpus)
 
     normalizedtexts = filter(
@@ -47,11 +52,29 @@ function loadhmtdata(url)
     libinfo = blocks(cexsrc, "citelibrary")[1]
     infoparts = split(libinfo.lines[1], "|")    
 
-    (textcatalog, normalizedtexts, infoparts[2])
+    (mss, ctscatalog, normalizedtexts, infoparts[2])
 end
 
-(catalog, normalizededition, releaseinfo) = loadhmtdata(dataurl)
+(codices, textcatalog, normalizededition, releaseinfo) = loadhmtdata(dataurl)
 
+
+"""Format title of a text catalog entry in markdown."""
+function format_title(txt)
+    txt.group * ", *", txt.work * "* (", txt.version, ")"
+end
+
+"""Format catalog entries as markdown list"""
+function textlist(textcatalog)
+    lines = []
+    for txt in textcatalog
+        push!(lines, "- " * format_title(txt))
+    end
+    join(lines, "\n")
+end
+
+function indexgraph()
+    ""
+end
 app = if haskey(ENV, "URLBASE")
     dash(assets_folder = assets, url_base_pathname = ENV["URLBASE"])
 else 
@@ -59,7 +82,25 @@ else
 end
 
 app.layout = html_div() do
-    html_h1("Homer Multitext archive: overview")
+    html_h1("$(releaseinfo): overview of contents"),
+    dcc_markdown("""
+    here's info
+    """),
+    html_h2("Images"),
+    "TBA",
+    html_h2("Manuscripts"),
+    dcc_markdown("""
+    **$(length(codices))** cataloged manuscripts
+    """),
+    html_h2("Indexes to manuscripts"),
+    indexgraph(),
+    html_h2("Editing"),
+    dcc_markdown("""
+    $(length(textcatalog)) texts.
+
+
+    $(textlist(textcatalog))
+    """)   
 end
 
 run_server(app, "0.0.0.0", DEFAULT_PORT, debug=true)
