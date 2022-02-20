@@ -32,6 +32,8 @@ using CitableAnnotations
 using CiteEXchange
 using Downloads
 using Unicode
+using SplitApplyCombine
+using Tables
 using Plots
 
 
@@ -41,7 +43,7 @@ and release info from HMT publication.
 function loadhmtdata(url)
     cexsrc = Downloads.download(url) |> read |> String
     mss = fromcex(cexsrc, Codex)
-
+    indexing = fromcex(cexsrc, TextOnPage)
     ctscatalog = fromcex(cexsrc, TextCatalogCollection)
     corpus = fromcex(cexsrc, CitableTextCorpus)
 
@@ -52,10 +54,10 @@ function loadhmtdata(url)
     libinfo = blocks(cexsrc, "citelibrary")[1]
     infoparts = split(libinfo.lines[1], "|")    
 
-    (mss, ctscatalog, normalizedtexts, infoparts[2])
+    (mss, indexing, ctscatalog, normalizedtexts, infoparts[2])
 end
 
-(codices, textcatalog, normalizededition, releaseinfo) = loadhmtdata(dataurl)
+(codices, indexes, textcatalog, normalizededition, releaseinfo) = loadhmtdata(dataurl)
 
 
 """Format title of a text catalog entry in markdown."""
@@ -73,7 +75,7 @@ function textlist(textcatalog)
     join(lines, "\n")
 end
 
-function indexgraph()
+function indexgraph(indices)
     ""
 end
 app = if haskey(ENV, "URLBASE")
@@ -102,7 +104,7 @@ app.layout = html_div() do
     (TBA)
     """),
     html_h2("Indexes to manuscripts"),
-    indexgraph(),
+    indexgraph(indexes),
     dcc_markdown("""
     
     Explore indexed manuscripts with the [iliad-browser dashboard](https://www.homermultitext.org/iliad-browser/).
