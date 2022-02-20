@@ -113,6 +113,7 @@ function indexgraph(indices)
         push!(barlist, bar(name=k, x=tbl.bk, y=tbl.count))
     end
     Plot(barlist)
+    
 end
 
 app = if haskey(ENV, "URLBASE")
@@ -123,12 +124,18 @@ end
 
 app.layout = html_div() do
     dcc_markdown("*Dashboard version*: **$(DASHBOARD_VERSION)**"),
+
+
     html_h1("$(releaseinfo): overview of contents"),
     dcc_markdown("""
     
     """),
+
+
     html_h2("Images"),
     "TBA",
+
+
     html_h2("Manuscripts"),
     dcc_markdown("""
     **$(length(codices))** cataloged manuscripts
@@ -141,8 +148,10 @@ app.layout = html_div() do
 
     (TBA)
     """),
+
+
     html_h2("Indexes to manuscripts"),
-    indexgraph(indexes),
+    dcc_graph(figure = indexgraph(indexes)),
     dcc_markdown("""
     
     Explore indexed manuscripts with the [iliad-browser dashboard](https://www.homermultitext.org/iliad-browser/).
@@ -156,6 +165,9 @@ app.layout = html_div() do
     
     Explore edited texts with the [alpha-search dashboard](https://www.homermultitext.org/alpha-search/).
     """),
+
+
+
 
     dcc_markdown("""
 ### Contents of texts
@@ -184,47 +196,3 @@ app.layout = html_div() do
 end
 
 run_server(app, "0.0.0.0", DEFAULT_PORT, debug=true)
-
-
-#=
-
-
-data = []
-for idx in indexes
-    for pr in idx.data
-        txt = pr[1]
-        bk = collapsePassageBy(txt, 1) |> passagecomponent
-        pieces = split(workcomponent(txt), ".")
-        push!(data, (pieces[end], bk))
-    end
-end
-
-grp = group(data)
-counts = []
-grp = group(data)
-counts = []
-for k in keys(grp)
-	push!(counts, (ms = k[1], bk = k[2], count = length(grp[k])))
-end
-
-
-mss = map(trpl -> trpl[1], counts) |> unique
-bks = collect(1:24) .|> string
-
-dataseries = Dict()
-for ms in mss   
-    padded = []
-    for bk in bks
-        extract = filter(trp -> trp[1] == ms && trp[2] == bk, counts)
-        isempty(extract) ? push!(padded, (ms = ms,bk = bk,count = 0)) : push!(padded, extract[1])
-    end
-    dataseries[ms] = Tables.columntable(padded)
-end
-
-barlist = GenericTrace{Dict{Symbol, Any}}[]
-for k in keys(dataseries)
-    tbl = dataseries[k]
-    push!(barlist, bar(name=k, x=tbl.bk, y=tbl.count))
-end
-plot(barlist)
-=#
