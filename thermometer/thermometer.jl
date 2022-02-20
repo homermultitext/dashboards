@@ -124,6 +124,21 @@ function indexgraph(indices)
     
 end
 
+
+intro = """
+
+### Current release
+
+The complete contents of the HMT project's archive are published in plain-text files in the CITE EXchange format (CEX). The current published release  is always available in a file named `hmt-current.cex` in the project's archival github repository, in the `archive/releases-cex`  directory. (Here is a link to [the raw CEX file](https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex).)
+
+### Earlier releases
+
+Earlier releases are available in subdirectories of `archive/releases-cex` by year.  In 2018, the HMT project published 5 releases; in 2020, 9 releases.
+
+Releases in 2022 are sequentially named `hmt-2022`**ID**`.cex` where **ID** is a successive letter of the alphabet.
+
+
+"""
 app = if haskey(ENV, "URLBASE")
     dash(assets_folder = assets, url_base_pathname = ENV["URLBASE"])
 else 
@@ -134,10 +149,8 @@ app.layout = html_div() do
     dcc_markdown("*Dashboard version*: **$(DASHBOARD_VERSION)**"),
 
 
-    html_h1("$(releaseinfo): overview of contents"),
-    dcc_markdown("""
-    
-    """),
+    html_h1("Overview of contents: $(releaseinfo)"),
+    dcc_markdown(intro),
 
 
     html_h2("Images"),
