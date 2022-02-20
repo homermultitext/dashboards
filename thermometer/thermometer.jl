@@ -5,7 +5,7 @@ if  ! isfile("Manifest.toml")
     Pkg.activate(".")
     Pkg.instantiate(    )
 end
-DASHBOARD_VERSION = "0.1.0"
+DASHBOARD_VERSION = "0.2.0"
 
 # Variables configuring the app:  
 #
@@ -23,6 +23,7 @@ dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/r
 
 using Dash
 using CitableBase, CitableText, CitableCorpus
+using CitableObject
 using CitablePhysicalText
 using CitableAnnotations
 using CiteEXchange
@@ -68,6 +69,28 @@ function textlist(textcatalog)
         push!(lines, "- " * format_title(txt))
     end
     join(lines, "\n")
+end
+
+
+"""Compose a Plotly figure graphing number of pages per codex.
+"""
+function pagesgraph(codd)
+    dataseries = []
+    for c in codd
+       siglum = split(urn(c) |> collectioncomponent, ".")[1]
+        push!(dataseries, (ms = siglum, pages = length(c)))
+    end
+    tbl = Tables.columntable(dataseries)
+    
+
+    graphlayout =  Layout(
+        title="Pages per manuscript",
+        xaxis_title = "Manuscript",
+        yaxis_title = "pages"
+
+    )
+    Plot( bar(x=tbl.ms, y=tbl.pages), graphlayout)
+
 end
 
 """Compose a Plotly figure graphing coverage by book
@@ -182,6 +205,9 @@ app.layout = html_div() do
 
 
     html_h2("Manuscripts"),
+
+    dcc_graph(figure = pagesgraph(codices)),
+    
     dcc_markdown("""
     **$(length(codices))** cataloged manuscripts
 
