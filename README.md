@@ -4,6 +4,7 @@ This repository hosts interactive dashboards written wtih [Dash.jl](https://dash
 
 ## Available dashboards
 
+1. `thermometer/thermometer.jl` (default port: `8060`):  automatically composed overview of the contents of the current publihsed release of the HMT archive.
 1. `alpha-search/alpha-search.jl` (default port: `8050`):  simple alphabetic search of Greek texts in the HMT archive.  Filter by manuscript and/or text.
 1. `codex-browser/codex-browser.jl` (default port: `8051`): visual browser of photographed and documented codices in the HMT archive.
     - `codices+local/codex-browser.jl` (default port: `8054`): a version of the `codex-browser.jl` that allows you to include a collection of cataloged local files
