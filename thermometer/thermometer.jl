@@ -71,6 +71,20 @@ function textlist(textcatalog)
     join(lines, "\n")
 end
 
+function textgraph(corpus)
+    iliad = filter(psg -> startswith(workcomponent(psg.urn), "tlg0012.tlg001"), corpus)
+    scholia = filter(psg -> startswith(workcomponent(psg.urn), "tlg5026"), corpus)
+    scholiawords = map(psg -> (psg.urn, split(psg.text) |> length), scholia)
+
+    countingtime = map(s -> (split(workcomponent(s[1]), ".")[2], s[2]), scholiawords)
+    grps = group(pr -> pr[1], countingtime)
+    scholiacounts = []
+    for k in keys(grps)
+        map(pr -> pr[2], grps["msAint"]) |> sum
+
+        #push!(scholiacounts, (ms = k[1], bk = k[2], count = length(grp[k])))
+    end
+end
 
 """Compose a Plotly figure graphing number of pages per codex.
 """
