@@ -112,7 +112,15 @@ function indexgraph(indices)
         tbl = dataseries[k]
         push!(barlist, bar(name=k, x=tbl.bk, y=tbl.count))
     end
-    Plot(barlist)
+
+
+    graphlayout =  Layout(
+        title="Coverage indexing MS pages to Iliad lines",
+        xaxis_title = "Book of Iliad",
+        yaxis_title = "Lines indexed"
+
+    )
+    Plot(barlist, graphlayout)
     
 end
 
