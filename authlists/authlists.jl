@@ -1,13 +1,13 @@
 # Run this dashboard from the root of the
 # github repository:
 using Pkg
-if  ! isfile("Manifest.toml")
-    Pkg.activate(".")
+if  ! isfile(joinpath(pwd(), "authlists", "Manifest.toml"))
+    Pkg.activate(joinpath(pwd(), "authlists"))
     Pkg.instantiate()
 end
 
 
-DASHBOARD_VERSION = "0.2.1"
+DASHBOARD_VERSION = "0.2.2"
 # Variables configuring the app:  
 #
 #  1. location  of the assets folder (CSS, etc.)
