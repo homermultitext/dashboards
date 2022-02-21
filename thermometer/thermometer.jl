@@ -1,15 +1,11 @@
-# CHECK OUT PLOTTING HERE:
-# https://dash.plotly.com/julia/interactive-graphing
-
-#
 # Run this dashboard from the root of the
 # github repository:
 using Pkg
-if  ! isfile("Manifest.toml")
-    Pkg.activate(".")
-    Pkg.instantiate(    )
+if  ! isfile(joinpath(pwd(), "thermometer", "Manifest.toml"))
+    Pkg.activate(joinpath(pwd(), "thermometer"))
+    Pkg.instantiate()
 end
-DASHBOARD_VERSION = "0.1.0"
+DASHBOARD_VERSION = "0.2.0"
 
 # Variables configuring the app:  
 #
@@ -27,6 +23,7 @@ dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/r
 
 using Dash
 using CitableBase, CitableText, CitableCorpus
+using CitableObject
 using CitablePhysicalText
 using CitableAnnotations
 using CiteEXchange
@@ -74,6 +71,45 @@ function textlist(textcatalog)
     join(lines, "\n")
 end
 
+function textgraph(corpus)
+    iliad = filter(psg -> startswith(workcomponent(psg.urn), "tlg0012.tlg001"), corpus)
+    scholia = filter(psg -> startswith(workcomponent(psg.urn), "tlg5026"), corpus)
+    scholiawords = map(psg -> (psg.urn, split(psg.text) |> length), scholia)
+
+    countingtime = map(s -> (split(workcomponent(s[1]), ".")[2], s[2]), scholiawords)
+    grps = group(pr -> pr[1], countingtime)
+    scholiacounts = []
+    for k in keys(grps)
+        map(pr -> pr[2], grps["msAint"]) |> sum
+
+        #push!(scholiacounts, (ms = k[1], bk = k[2], count = length(grp[k])))
+    end
+end
+
+"""Compose a Plotly figure graphing number of pages per codex.
+"""
+function pagesgraph(codd)
+    dataseries = []
+    for c in codd
+       siglum = split(urn(c) |> collectioncomponent, ".")[1]
+        push!(dataseries, (ms = siglum, pages = length(c)))
+    end
+    tbl = Tables.columntable(dataseries)
+    
+
+    graphlayout =  Layout(
+        title="Pages per manuscript",
+        xaxis_title = "Manuscript",
+        yaxis_title = "pages"
+
+    )
+    Plot( bar(x=tbl.ms, y=tbl.pages), graphlayout)
+
+end
+
+"""Compose a Plotly figure graphing coverage by book
+of Iliad indexing for different MSS.
+"""
 function indexgraph(indices)
     data = []
     for idx in indexes
@@ -121,7 +157,6 @@ function indexgraph(indices)
 
     )
     Plot(barlist, graphlayout)
-    
 end
 
 
@@ -139,6 +174,26 @@ Releases in 2022 are sequentially named `hmt-2022`**ID**`.cex` where **ID** is a
 
 """
 
+function sums(mslist, normededitions, textcat)
+    pagecount = map(ms -> length(ms), mslist) |> sum
+    mscount = length(mslist)
+
+    iliadlines = filter(psg -> startswith(workcomponent(psg.urn), "tlg0012.tlg001"), normededitions) |> length
+
+
+    scholia = filter(psg -> startswith(workcomponent(psg.urn), "tlg5026"), normededitions)
+    commentcount = filter(psg-> endswith(passagecomponent(psg.urn), "comment"),  scholia) |> length
+    wordcount = map(psg -> split(psg.text) |> length, normalizededition) |> sum
+    doccount = length(textcat)
+    """The current release of the HMT archive publishes:
+    
+- **$(pagecount) pages** in **$(mscount) manuscripts**
+- **$(wordcount) words** in diplomatic editions of **$(doccount) cataloged documents**
+- diplomatic and normalized editions of **$(iliadlines) lines** of the *Iliad*
+- diplomatic and normalized editions of **$(commentcount) scholia**
+
+"""    
+end
 
 app = if haskey(ENV, "URLBASE")
     dash(assets_folder = assets, url_base_pathname = ENV["URLBASE"])
@@ -151,6 +206,11 @@ app.layout = html_div() do
 
 
     html_h1("Overview of contents: $(releaseinfo)"),
+    dcc_markdown(
+        sums(codices, normalizededition, textcatalog)
+    ),
+
+
     dcc_markdown(intro),
 
 
@@ -159,6 +219,9 @@ app.layout = html_div() do
 
 
     html_h2("Manuscripts"),
+
+    dcc_graph(figure = pagesgraph(codices)),
+    
     dcc_markdown("""
     **$(length(codices))** cataloged manuscripts
 
@@ -183,6 +246,8 @@ app.layout = html_div() do
     
     Explore edited texts with the [alpha-search dashboard](https://www.homermultitext.org/alpha-search/).
     """),
+
+
 
     dcc_markdown("""## Forthcoming   
 
