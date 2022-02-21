@@ -1,4 +1,7 @@
-# Homer Multitext project: dashboards
+# Explore the Homer Multitext archive with interactive dashboards
+
+
+
 
 This repository hosts interactive dashboards written wtih [Dash.jl](https://dash.plotly.com/julia) that you can use to explore the contents of published releases of the HMT project archive.  
 
@@ -37,7 +40,11 @@ Make sure you have the Julia plugin installed.
 
 ### From the command line
 
-`julia --project="." PATH/TO/DASHBOARD`
+`julia --project="DASHBOARD_DIRECTORY" FULL_PATH/TO/DASHBOARD`
+
+For example, you can start the `alpha-search` dashboard with
+
+`julia --project=alpha-search alpha-search/alpha-search.jl`
 
 ### Viewing the dashboard
 
