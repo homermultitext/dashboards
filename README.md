@@ -1,9 +1,47 @@
 # Explore the Homer Multitext archive with interactive dashboards
 
+You can use reactive dashboards in your web browser to explore the current published release of the Homer Multitext project's data archive.  
+
+## Hosted on [homermultitext.org](https://www.homermulitextorg)
+
+1. <https://www.homermultitext.org/thermometer/>:  an automatically composed overview of the contents of the current published release of the HMT archive.
+1. <https://www.homermultitext.org/alpha-search/>:  simple alphabetic search of Greek texts in the HMT archive.  Filter by manuscript and/or text.
+1. <https://www.homermultitext.org/codex-browser/>: visual browser of photographed and documented codices in the HMT archive.
+1. <https://www.homermultitext.org/authlists/>>:  searchable tables of authority lists
+1. <https://www.homermultitext.org/iliad-browser/>: browser manuscript images by *Iliad* reference.
 
 
 
-This repository hosts interactive dashboards written wtih [Dash.jl](https://dash.plotly.com/julia) that you can use to explore the contents of published releases of the HMT project archive.  
+## Running dashboards locally
+
+If you install [Julia](https://julialang.org), you can run any of the dashboards locally when you're online. (The current dashboards download a release of the HMT archive over the internet; future versions may allow you to load data from a local file.)
+
+The dashboards expect to be started from the root directory of this repository.  You can start them from the command line or from [Visual Studio Code](https://code.visualstudio.com).
+
+
+### Starting from VS Code
+
+Make sure you have the Julia plugin installed.
+
+1. open this repository, and find the dashboard you want to run
+2. option-click anywhere in the file
+
+
+### Starting from the command line
+
+The following list tells you the path to each dashboard and the port it expects to run on.  You can start the dashboard with:
+
+`julia --project="DASHBOARD_DIRECTORY" FULL_PATH/TO/DASHBOARD`
+
+For example, you can start the `alpha-search` dashboard with
+
+`julia --project=alpha-search alpha-search/alpha-search.jl`
+
+### Viewing the dashboard
+
+By default, the dashboards run on the port number listed below.  Open a browser to `http://localhost:PORT_NUMBER`.
+
+
 
 ## Available dashboards
 
@@ -14,38 +52,9 @@ This repository hosts interactive dashboards written wtih [Dash.jl](https://dash
 1. `authlists/authlists.jl` (default port: `8052`):  searchable tables of authority lists
 1. `iliad-browser/iliad-browser.jl` (default port: `8053`): browser manuscript images by *Iliad* reference.
 
-
 ## Plannned dashboards (work in progress)
 
 1. `lightbox/lightbox.jl` (default port: `8054`): paged browsing of image collections.
 
 
-## Running the dashboards
 
-### Prequisites
-
-- internet access (the current dashboards download a release of the HMT archive; future versions may allow you to load data from a local file)
-- [Julia](https://julialang.org)
-
-
-The dashboards expect to be started from the root directory of this repository.  You can start them from the command line or from [Visual Studio Code](https://code.visualstudio.com).
-
-### Starting from VS Code
-
-Make sure you have the Julia plugin installed.
-
-1. open this repository, and find the dashboard you want to run
-2. option-click anywhere in the file
-
-
-### From the command line
-
-`julia --project="DASHBOARD_DIRECTORY" FULL_PATH/TO/DASHBOARD`
-
-For example, you can start the `alpha-search` dashboard with
-
-`julia --project=alpha-search alpha-search/alpha-search.jl`
-
-### Viewing the dashboard
-
-By default, the dashboards run on the port number listed above.  Open a browser to `http://localhost:PORT_NUMBER`.
