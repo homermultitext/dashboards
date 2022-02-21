@@ -29,7 +29,7 @@ Make sure you have the Julia plugin installed.
 
 ### Starting from the command line
 
-The following list tells you the path to each dashboard and the port it expects to run on.  You can start the dashboard with:
+The following list of "Available Dashboards" tells you the path to each dashboard and the port it expects to run on.  You can start the dashboard with:
 
 `julia --project="DASHBOARD_DIRECTORY" FULL_PATH/TO/DASHBOARD`
 
@@ -43,7 +43,7 @@ By default, the dashboards run on the port number listed below.  Open a browser 
 
 
 
-## Available dashboards
+### Available dashboards
 
 1. `thermometer/thermometer.jl` (default port: `8060`):  automatically composed overview of the contents of the current published release of the HMT archive.
 1. `alpha-search/alpha-search.jl` (default port: `8050`):  simple alphabetic search of Greek texts in the HMT archive.  Filter by manuscript and/or text.

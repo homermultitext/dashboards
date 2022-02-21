@@ -1,10 +1,9 @@
 # Run this dashboard from the root of the
 # github repository:
 using Pkg
-if  ! isfile(joinpath(pwd(), "iliad-browser", "Manifest.toml"))
-    Pkg.activate(joinpath(pwd(), "iliad-browser"))
-    Pkg.instantiate()
-end
+Pkg.activate(joinpath(pwd(), "iliad-browser"))
+Pkg.instantiate()
+
 
 DASHBOARD_VERSION = "0.2.1"
 

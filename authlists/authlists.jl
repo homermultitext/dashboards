@@ -1,10 +1,9 @@
 # Run this dashboard from the root of the
 # github repository:
 using Pkg
-if  ! isfile(joinpath(pwd(), "authlists", "Manifest.toml"))
-    Pkg.activate(joinpath(pwd(), "authlists"))
-    Pkg.instantiate()
-end
+Pkg.activate(joinpath(pwd(), "authlists"))
+Pkg.instantiate()
+
 
 
 DASHBOARD_VERSION = "0.2.2"
