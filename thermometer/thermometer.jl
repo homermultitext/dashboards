@@ -1,9 +1,9 @@
 # Run this dashboard from the root of the
 # github repository:
 using Pkg
-if  ! isfile("Manifest.toml")
-    Pkg.activate(".")
-    Pkg.instantiate(    )
+if  ! isfile(joinpath(pwd(), "thermometer", "Manifest.toml"))
+    Pkg.activate(joinpath(pwd(), "thermometer"))
+    Pkg.instantiate()
 end
 DASHBOARD_VERSION = "0.2.0"
 
