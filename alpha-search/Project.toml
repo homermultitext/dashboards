@@ -1,0 +1,15 @@
+[deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+CitableBase = "d6f014bd-995c-41bd-9893-703339864534"
+CitableCorpus = "cf5ac11a-93ef-4a1a-97a3-f6af101603b5"
+CitableText = "41e66566-473b-49d4-85b7-da83b66615d8"
+CiteEXchange = "e2e9ead3-1b6c-4e96-b95f-43e6ab899178"
+Dash = "1b08a953-4be3-4667-9a23-3db579824955"
+Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
+
+[compat]
+CitableBase = "10"
+CitableCorpus = "0.12"
+CitableText = "0.15"
+CiteEXchange = "0.9"
+Dash = "1"
