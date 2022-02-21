@@ -5,7 +5,7 @@ if  ! isfile(joinpath(pwd(), "thermometer", "Manifest.toml"))
     Pkg.activate(joinpath(pwd(), "thermometer"))
     Pkg.instantiate()
 end
-DASHBOARD_VERSION = "0.2.0"
+DASHBOARD_VERSION = "0.2.1"
 
 # Variables configuring the app:  
 #
@@ -22,13 +22,16 @@ dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/r
 
 
 using Dash
-using CitableBase, CitableText, CitableCorpus
+
+using CitableAnnotations
+using CitableBase
+using CitableCorpus
 using CitableObject
 using CitablePhysicalText
-using CitableAnnotations
+using CitableText
 using CiteEXchange
+
 using Downloads
-using Unicode
 using SplitApplyCombine
 using Tables
 using PlotlyJS

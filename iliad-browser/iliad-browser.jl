@@ -1,12 +1,12 @@
 # Run this dashboard from the root of the
 # github repository:
 using Pkg
-if  ! isfile("Manifest.toml")
-    Pkg.activate(".")
+if  ! isfile(joinpath(pwd(), "iliad-browser", "Manifest.toml"))
+    Pkg.activate(joinpath(pwd(), "iliad-browser"))
     Pkg.instantiate()
 end
 
-DASHBOARD_VERSION = "0.2.0"
+DASHBOARD_VERSION = "0.2.1"
 
 # Variables configuring the app:  
 #
@@ -27,10 +27,14 @@ ict = "http://www.homermultitext.org/ict2/?"
 dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex"
 
 using Dash
-using HTTP
-using CitableBase, CitableObject, CitableImage, CitableText
-using CitablePhysicalText
+using Downloads
+
 using CitableAnnotations
+using CitableBase
+using CitableImage
+using CitableObject
+using CitablePhysicalText
+using CitableText
 using CiteEXchange
 
 ILIAD = CtsUrn("urn:cts:greekLit:tlg0012.tlg001:")
@@ -40,7 +44,7 @@ iiifservice = IIIFservice(baseiiifurl, iiifroot)
 and release info from HMT publication.
 """
 function loadhmtdata(url::AbstractString)
-    cexsrc = HTTP.get(url).body |> String
+    cexsrc = Downloads.download(url) |> read |> String
     codexlist = fromcex(cexsrc, Codex)
     indexing = fromcex(cexsrc, TextOnPage)
     libinfo = blocks(cexsrc, "citelibrary")[1]
