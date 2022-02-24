@@ -12,7 +12,7 @@ You can use reactive dashboards in your web browser to explore the current publi
 
 1. [alpha-search](https://www.homermultitext.org/alpha-search):  simple alphabetic search of Greek texts in the HMT archive.  Filter by manuscript and/or text.
 1. [codex-browser](https://www.homermultitext.org/codex-browser): visual browser of photographed and documented codices in the HMT archive.
- 1. lightbox (TBA): paged browsing of image collections..  
+ 1. [lightbox](https://www.homermultitext.org/lightbox/): paged browsing of image collections..  
 1. [iliad-browser](https://www.homermultitext.org/iliad-browser): browse indexed manuscript images by *Iliad* reference.
 
 ### Reference lists
