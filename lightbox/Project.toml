@@ -1,0 +1,15 @@
+[deps]
+CitableBase = "d6f014bd-995c-41bd-9893-703339864534"
+CitableImage = "17ccb2e5-db19-44b3-b354-4fd16d92c74e"
+CitableObject = "e2b2f5ea-1cd8-4ce8-9b2b-05dad64c2a57"
+CiteEXchange = "e2e9ead3-1b6c-4e96-b95f-43e6ab899178"
+Dash = "1b08a953-4be3-4667-9a23-3db579824955"
+Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
+Tables = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
+
+[compat]
+CitableBase = "10"
+CitableImage = "0.6"
+CitableObject = "0.13"
+CiteEXchange = "0.10"
+Dash = "1"
