@@ -4,11 +4,21 @@ You can use reactive dashboards in your web browser to explore the current publi
 
 ## Hosted on [homermultitext.org](https://www.homermulitextorg)
 
-1. <https://www.homermultitext.org/thermometer/>:  an automatically composed overview of the contents of the current published release of the HMT archive.
-1. <https://www.homermultitext.org/alpha-search/>:  simple alphabetic search of Greek texts in the HMT archive.  Filter by manuscript and/or text.
-1. <https://www.homermultitext.org/codex-browser/>: visual browser of photographed and documented codices in the HMT archive.
-1. <https://www.homermultitext.org/authlists/>>:  searchable tables of authority lists
-1. <https://www.homermultitext.org/iliad-browser/>: browser manuscript images by *Iliad* reference.
+### Status of the archive
+
+1. [thermometer](https://www.homermultitext.org/thermometer/):  an automatically composed overview of the contents of the current published release of the HMT archive.
+
+### Explore contents of the archive
+
+1. [alpha-search](https://www.homermultitext.org/alpha-search):  simple alphabetic search of Greek texts in the HMT archive.  Filter by manuscript and/or text.
+1. [codex-browser](https://www.homermultitext.org/codex-browser): visual browser of photographed and documented codices in the HMT archive.
+ 1. lightbox (TBA): paged browsing of image collections..  
+1. [iliad-browser](https://www.homermultitext.org/iliad-browser): browse indexed manuscript images by *Iliad* reference.
+
+### Reference lists
+
+1. [authlists](https://www.homermultitext.org/authlists):  searchable tables of authority lists
+
 
 
 
@@ -45,16 +55,22 @@ By default, the dashboards run on the port number listed below.  Open a browser 
 
 ### Available dashboards
 
+#### Status of the archive
+
 1. `thermometer/thermometer.jl` (default port: `8060`):  automatically composed overview of the contents of the current published release of the HMT archive.
+
+#### Explore contents of the archive
+
 1. `alpha-search/alpha-search.jl` (default port: `8050`):  simple alphabetic search of Greek texts in the HMT archive.  Filter by manuscript and/or text.
 1. `codex-browser/codex-browser.jl` (default port: `8051`): visual browser of photographed and documented codices in the HMT archive.
     - `codices+local/codex-browser.jl` (default port: `8054`): a version of the `codex-browser.jl` that allows you to include a collection of cataloged local files
+1. `lightbox/lightbox.jl` (default port: `8055`): paged browsing of image collections..    
+1. `iliad-browser/iliad-browser.jl` (default port: `8053`): browse manuscript images by *Iliad* reference.
+
+
+#### Reference lists
+
 1. `authlists/authlists.jl` (default port: `8052`):  searchable tables of authority lists
-1. `iliad-browser/iliad-browser.jl` (default port: `8053`): browser manuscript images by *Iliad* reference.
-
-## Plannned dashboards (work in progress)
-
-1. `lightbox/lightbox.jl` (default port: `8054`): paged browsing of image collections.
 
 
 
