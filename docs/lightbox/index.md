@@ -10,4 +10,5 @@ parent: Dashboards from the Homer Multitext project
 
 ## Release notes
 
+- **0.1.1**:  check for no selection before creating lightbox.
 - **0.1**: first test version 
