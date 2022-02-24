@@ -43,10 +43,7 @@ function loadhmtdata(url)
 
     imgcollurns = implementations(cexsrc, CitableImage.IMAGE_MODEL)
     newblocks = map(u ->  "#!citedata\n" * join(collectiondata(cexsrc, u), "\n"), imgcollurns)
-    #sigla  = map(u -> u |> dropversion |> collectioncomponent, imgcollurns)
-    # 
     imgs = []
-    #for i in 1:length(sigla)
     for i in 1:length(imgcollurns)
         if length(blocks(newblocks[i])[1].lines) < 5
             @warn("< 5 data lines for $(imgcollurns[i]) ")
@@ -67,8 +64,9 @@ end
 """Compose radio options for selecting image collection."""
 function collectionmenu(imgcolls)#codd::Vector{Codex})
     opts = []
-    for sig in imgcolls.siglum
-        push!(opts, (label = sig, value = sig))
+    #for sig in imgcolls.siglum
+    for imgcoll in Tables.rows(imagecollections)
+        push!(opts, (label = imgcoll.siglum, value = imgcoll.siglum))
     end
     opts
 end
