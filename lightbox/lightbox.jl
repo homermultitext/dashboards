@@ -31,6 +31,7 @@ using CitableObject.CexUtils
 using CitableImage
 using CiteEXchange
 using Downloads
+using Tables
 
 
 iiifservice = IIIFservice(baseiiifurl, iiifroot)
@@ -44,22 +45,22 @@ function loadhmtdata(url)
     newblocks = map(u ->  "#!citedata\n" * join(collectiondata(cexsrc, u), "\n"), imgcollurns)
     sigla  = map(u -> u |> dropversion |> collectioncomponent, imgcollurns)
     
-
-    imgs = for i in 1:length(sigla)
-        @info("siglum $(i)", sigla[i])
+    imgs = []
+    for i in 1:length(sigla)
+        #@info("siglum $(i)", sigla[i])
         if length(blocks(newblocks[i])[1].lines) < 5
             @warn("< 5 data lines for $(sigla[i]) ")
         else
 
             coll =  fromcex(newblocks[i], ImageCollection, strict = false)
-            (siglum = sigla[i], images = coll)
+            push!(imgs, (siglum = sigla[i], images = coll))
         end
     end
 
     #imgs = fromcex(cexsrc, ImageCollection)
     libinfo = blocks(cexsrc, "citelibrary")[1]
     infoparts = split(libinfo.lines[1], "|")  
-    (imgs, infoparts[2])
+    (Tables.columntable(imgs), infoparts[2])
 end
 (imagecollections, releaseinfo) = loadhmtdata(dataurl)
 
@@ -79,7 +80,10 @@ app.layout = html_div() do
     """),
     html_h1() do 
         dcc_markdown("HMT project: browse image collections")
-    end
+    end,
+    dcc_markdown("""**$(length(imagecollections.images))** collections 
+    cataloging a total of **$(length.(imagecollections.images) |> sum)** images
+    """)
 end
 
 
