@@ -4,7 +4,7 @@ using Pkg
 Pkg.activate(joinpath(pwd(), "lightbox"))
 Pkg.instantiate()
 
-DASHBOARD_VERSION = "0.1.0"
+DASHBOARD_VERSION = "0.1.1"
 # Variables configuring the app:  
 #
 #  1. location  of the assets folder (CSS, etc.)
@@ -152,7 +152,7 @@ callback!(app,
     ) do  coll, c, r
 
     if isnothing(coll)
-        ""
+        ("",[])
     else
         selectedimages = nothing
         for row in Tables.rows(imagecollections)
@@ -161,19 +161,24 @@ callback!(app,
             end
         end
        
-        # Somehow I've got this backwards?
-        lb = lightbox(selectedimages, cols = r, rows = c)
-        lbl = """Thumbnail images are linked to pannable/zoomable images in the HMT Image Citation Tool.
-        
-        *Choose a lightbox table from $(pages(lb)) pages for $(coll)* ($(selectedimages |> length) images in $(c) ×  $(r) tables)
-        """
+        if isnothing(selectedimages)
+            @warn("No images found for $(coll)")
+            ("",[])
+        else
+            # Somehow I've got this backwards?
+            lb = lightbox(selectedimages, cols = r, rows = c)
+            lbl = """Thumbnail images are linked to pannable/zoomable images in the HMT Image Citation Tool.
+            
+            *Choose a lightbox table from $(pages(lb)) pages for $(coll)* ($(selectedimages |> length) images in $(c) ×  $(r) tables)
+            """
 
-        optlist = []
-        for pnum in 1:pages(lb)
-            push!(optlist, (label = "Page $(pnum)", value = pnum))
+            optlist = []
+            for pnum in 1:pages(lb)
+                push!(optlist, (label = "Page $(pnum)", value = pnum))
+            end
+
+            (dcc_markdown(lbl), optlist)
         end
-
-        (dcc_markdown(lbl), optlist)
     end
 end
 
@@ -191,8 +196,15 @@ callback!(app,
         end
     end
     
-    lb = lightbox(selectedimages, cols = r, rows = c)
-    dcc_markdown(mdtable(lb, pg))
+    @info("Checking $coll")
+    @info("Found ", selectedimages)
+    if isnothing(selectedimages)
+        @warn("No images matched for $(coll)")
+        ""
+    else
+        lb = lightbox(selectedimages, cols = r, rows = c)
+        dcc_markdown(mdtable(lb, pg))
+    end
 end
 
 
