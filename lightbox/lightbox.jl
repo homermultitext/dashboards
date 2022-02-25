@@ -4,7 +4,7 @@ using Pkg
 Pkg.activate(joinpath(pwd(), "lightbox"))
 Pkg.instantiate()
 
-DASHBOARD_VERSION = "0.2.0"
+DASHBOARD_VERSION = "0.2.1"
 # Variables configuring the app:  
 #
 #  1. location  of the assets folder (CSS, etc.)
@@ -33,7 +33,6 @@ using CiteEXchange
 using Downloads
 using Tables
 
-
 iiifservice = IIIFservice(baseiiifurl, iiifroot)
 
 """Construct a table of image collections, and release info.
@@ -50,9 +49,7 @@ function loadhmtdata(url)
             @warn("< 5 data lines for $(imgcollurns[i]) ")
         else
             collurn = imgcollurns[i]
-            #siglum = dropversion(collurn) |> collectioncomponent
             coll =  fromcex(newblocks[i], ImageCollection, strict = false)
-            #push!(imgs, (urn = collurn, siglum = siglum, images = coll))
             push!(imgs, (urn = string(collurn), images = coll))
             push!(menupairs, cites[i])
         end
@@ -93,40 +90,69 @@ app.layout = html_div() do
     """),
 
     
-  
-    html_h6("Image collections"),
-    dcc_markdown(
-        """*Choose an image collection*"""
-    ),
-    dcc_radioitems(
-        id = "collection",
-        options = collectionmenu(imagecites)
-    ),
-    html_h6("Format table"),
-    html_p(id = "rc_label"),
- 
-    dcc_markdown("*Columns*:"),
-    dcc_slider(
-        id="columns",
-        min=4,
-        max=10,
-        step=1,
-        value=6,
+    html_div(
+        className = "panel",
+        children = [
+            html_div(
+                className = "columnl",
+                children = [
+                    html_h4("Image collections"),
+                    dcc_markdown(
+                        """*Clear page selection below (if any), then choose an image collection*"""
+                    ),
+                    dcc_radioitems(
+                        id = "collection",
+                        options = collectionmenu(imagecites)
+                    )
+                ]
+            ),
+
+            html_div(
+            className = "columnr",
+            children = [
+            html_h6("Format table"),
+            html_p(id = "rc_label"),
+        
+            dcc_markdown("*Columns*:"),
+            dcc_slider(
+                id="columns",
+                min=4,
+                max=10,
+                step=1,
+                value=6,
+            ),
+
+            dcc_markdown("*Rows*:"),
+            dcc_slider(
+                id="rows",
+                min=0,
+                max=100,
+                step=5,
+                value=20,
+            ),
+            ]
+        ),
+        ]
     ),
 
-    dcc_markdown("*Rows*:"),
-    dcc_slider(
-        id="rows",
-        min=0,
-        max=100,
-        step=5,
-        value=20,
-    ),
 
-    html_h6("Page"),
+    html_div(
+    className = "panel",
 
-    html_div(id = "pagelabel"),
-    dcc_dropdown(id = "pg"),
+    children = [
+        
+
+        html_div(
+            className = "columnl",            
+            children = [
+                html_h6("Page"),
+                html_div(id = "pagelabel"),
+                dcc_dropdown(id = "pg"),
+                ]
+        )
+    ]),
+
+    
     
 
     html_div(id = "display")
@@ -142,14 +168,13 @@ callback!(app,
     return dcc_markdown("Format display in tables of *$(c)* columns  × *$(r)* rows of images.")
 end
 
-
 callback!(app, 
     Output("pagelabel", "children"), 
     Output("pg", "options"), 
-    Input("collection", "value"),
     Input("columns", "value"),
-    Input("rows", "value")
-    ) do  coll, c, r
+    Input("rows", "value"),
+    Input("collection", "value")
+    ) do  c, r, coll
 
     if isnothing(coll)
         ("",[])
@@ -167,8 +192,7 @@ callback!(app,
         else
             # Somehow I've got this backwards?
             lb = lightbox(selectedimages, cols = r, rows = c)
-            lbl = """Thumbnail images are linked to pannable/zoomable images in the HMT Image Citation Tool.
-            
+            lbl = """
             *Choose a lightbox table from $(pages(lb)) pages for $(coll)* ($(selectedimages |> length) images in $(c) ×  $(r) tables)
             """
 
@@ -199,14 +223,15 @@ callback!(app,
             end
         end
         
-        @info("Checking $coll")
-        @info("Found ", selectedimages)
+        #@info("Checking $coll")
+        #@info("Found ", selectedimages)
         if isnothing(selectedimages)
             @warn("No images matched for $(coll)")
             ""
         else
             lb = lightbox(selectedimages, cols = r, rows = c)
-            dcc_markdown(mdtable(lb, pg))
+            preface = "#### Page $(pg)\n\nThumbnail images are linked to pannable/zoomable images in the HMT Image Citation Tool.\n\n"
+            dcc_markdown(preface * mdtable(lb, pg))
         end
     end
 end
