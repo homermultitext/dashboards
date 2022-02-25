@@ -4,7 +4,7 @@ using Pkg
 Pkg.activate(joinpath(pwd(), "lightbox"))
 Pkg.instantiate()
 
-DASHBOARD_VERSION = "0.1.1"
+DASHBOARD_VERSION = "0.2.0"
 # Variables configuring the app:  
 #
 #  1. location  of the assets folder (CSS, etc.)
@@ -40,35 +40,35 @@ iiifservice = IIIFservice(baseiiifurl, iiifroot)
 """
 function loadhmtdata(url)
     cexsrc = Downloads.download(url) |> read |> String
-
+    cites = citeids(cexsrc, CitableImage.IMAGE_MODEL)
     imgcollurns = implementations(cexsrc, CitableImage.IMAGE_MODEL)
     newblocks = map(u ->  "#!citedata\n" * join(collectiondata(cexsrc, u), "\n"), imgcollurns)
-    #sigla  = map(u -> u |> dropversion |> collectioncomponent, imgcollurns)
-    # 
     imgs = []
-    #for i in 1:length(sigla)
+    menupairs = []
     for i in 1:length(imgcollurns)
         if length(blocks(newblocks[i])[1].lines) < 5
             @warn("< 5 data lines for $(imgcollurns[i]) ")
         else
             collurn = imgcollurns[i]
-            siglum = dropversion(collurn) |> collectioncomponent
+            #siglum = dropversion(collurn) |> collectioncomponent
             coll =  fromcex(newblocks[i], ImageCollection, strict = false)
-            push!(imgs, (urn = collurn, siglum = siglum, images = coll))
+            #push!(imgs, (urn = collurn, siglum = siglum, images = coll))
+            push!(imgs, (urn = string(collurn), images = coll))
+            push!(menupairs, cites[i])
         end
     end
 
     libinfo = blocks(cexsrc, "citelibrary")[1]
     infoparts = split(libinfo.lines[1], "|")  
-    (Tables.columntable(imgs), infoparts[2])
+    (Tables.columntable(imgs), menupairs, infoparts[2])
 end
-(imagecollections, releaseinfo) = loadhmtdata(dataurl)
+(imagecollections, imagecites, releaseinfo) = loadhmtdata(dataurl)
 
 """Compose radio options for selecting image collection."""
-function collectionmenu(imgcolls)#codd::Vector{Codex})
+function collectionmenu(citepairs)
     opts = []
-    for sig in imgcolls.siglum
-        push!(opts, (label = sig, value = sig))
+    for cite in citepairs
+        push!(opts, (label = cite.label, value = string(cite.urn)))
     end
     opts
 end
@@ -100,7 +100,7 @@ app.layout = html_div() do
     ),
     dcc_radioitems(
         id = "collection",
-        options = collectionmenu(imagecollections)
+        options = collectionmenu(imagecites)
     ),
     html_h6("Format table"),
     html_p(id = "rc_label"),
@@ -156,7 +156,7 @@ callback!(app,
     else
         selectedimages = nothing
         for row in Tables.rows(imagecollections)
-            if row.siglum == coll
+            if row.urn == coll
                 selectedimages = row.images
             end
         end
@@ -189,21 +189,25 @@ callback!(app,
     State("columns", "value"),
     State("rows", "value")
     ) do  pg, coll, r, c
-    selectedimages = nothing
-    for row in Tables.rows(imagecollections)
-        if row.siglum == coll
-            selectedimages = row.images
-        end
-    end
-    
-    @info("Checking $coll")
-    @info("Found ", selectedimages)
-    if isnothing(selectedimages)
-        @warn("No images matched for $(coll)")
+    if isnothing(pg)
         ""
     else
-        lb = lightbox(selectedimages, cols = r, rows = c)
-        dcc_markdown(mdtable(lb, pg))
+        selectedimages = nothing
+        for row in Tables.rows(imagecollections)
+            if row.urn == coll
+                selectedimages = row.images
+            end
+        end
+        
+        @info("Checking $coll")
+        @info("Found ", selectedimages)
+        if isnothing(selectedimages)
+            @warn("No images matched for $(coll)")
+            ""
+        else
+            lb = lightbox(selectedimages, cols = r, rows = c)
+            dcc_markdown(mdtable(lb, pg))
+        end
     end
 end
 
