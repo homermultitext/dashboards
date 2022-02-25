@@ -1,0 +1,15 @@
+
+.panel:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+.columnl {
+  float: left;
+  width: 45%;
+}
+
+.columnr {
+  float: right;
+  width: 45%;
+}
