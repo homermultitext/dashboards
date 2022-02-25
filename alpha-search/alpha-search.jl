@@ -5,7 +5,7 @@ Pkg.activate(joinpath(pwd(), "alpha-search"))
 Pkg.instantiate()
 
 
-DASHBOARD_VERSION = "0.2.2"
+DASHBOARD_VERSION = "0.2.3"
 
 # Variables configuring the app:  
 #
@@ -65,49 +65,64 @@ app.layout = html_div() do
         """
     end,
     html_h1("HMT project: search corpus by alphabetic string"),
-    html_blockquote() do
-        html_ul() do
-            html_li("Select manuscripts and texts to include"),
-            html_li("Enter an alphabetic string (no accents or breathings) in Unicode Greek to search for"),
-            html_li() do
-                dcc_markdown("Minimum length of query string is **3 characters**")
-            end
-        end
-    end,
-    html_div() do
-            "Manuscripts to include:",
+    dcc_markdown(
+        """
+- Select manuscripts and texts to include
+-  Enter an alphabetic string (no accents or breathings) in Unicode Greek to search for
+- Minimum length of query string is **3 characters**
+
+"""
+    ),
+       
+   
+    html_div(
+        className = "panel",
+        children = [
+        html_div(
+            className = "column_l",
+            children = [
+                dcc_markdown("*Manuscripts to include*:"),
+                html_div(style=Dict("max-width" => "200px"),
+                    dcc_dropdown(
+                        id = "ms",
+                        options = [
+                            (label = "All manuscripts", value = "all"),
+                            (label = "Venetus A", value = "va")
+                        ],
+                        value = "all",
+                        clearable=false
+                    )
+                )
+            ]
+        ),
+        html_div(
+            className = "column_r",
+            children = [
+            dcc_markdown("*Texts to include*:"),
             html_div(style=Dict("max-width" => "200px"),
                 dcc_dropdown(
-                    id = "ms",
+                    id = "txt",
                     options = [
-                        (label = "All manuscripts", value = "all"),
-                        (label = "Venetus A", value = "va")
+                        (label = "All texts", value = "all"),
+                        (label = "Iliad", value = "iliad"),
+                        (label = "scholia", value = "scholia"),
                     ],
-                    value = "all",
+                    value = "scholia",
                     clearable=false
                 )
             )
-    end,
-    html_div() do
-        "Texts to include:",
-        html_div(style=Dict("max-width" => "200px"),
-            dcc_dropdown(
-                id = "txt",
-                options = [
-                    (label = "All texts", value = "all"),
-                    (label = "Iliad", value = "iliad"),
-                    (label = "scholia", value = "scholia"),
-                ],
-                value = "scholia",
-                clearable=false
-            )
-        )
-    end,
-  
+            ]
+        ),
+        ]
+    ),
+    html_div(
+        id = "selectedcount",
+        className = "panel"
+    ),
     html_div(
         children = [
-        "Search for: ",
-        dcc_input(id = "query", value = "", type = "text")
+        dcc_markdown("## Search\n\n*Search for*: "),
+        dcc_input(id = "query", value = "", type = "text", placeholder="αθετεον")
         ]
     ),
     html_br(),
@@ -180,7 +195,7 @@ function displaymarkdown(psgs, queryterm)
     for i in indices
         push!(hits, psgs[i])
     end
-    summary = "## $(length(hits)) matches for **$(queryterm)**\n\n(Searched $(length(psgs)) citable passages.)"
+    summary = "### $(length(hits)) matches for **$(queryterm)**\n\n(Searched $(length(psgs)) citable passages.)"
     #summary * "\n\n" * formatpsgs(hits)
     summary * "\n\n" * formatpsgs(hits)
 
@@ -204,10 +219,20 @@ end
 
 callback!(
     app, 
-    Output("results", "children"), 
-    Input("query", "value"),
+    Output("selectedcount", "children"),
     Input("ms", "value"),
     Input("txt", "value"),
+) do ms_value, txt_value
+    passages_for_ms = select_texts(normalizededition, ms_value, txt_value)
+    dcc_markdown("Selected corpus has **$(length(passages_for_ms))** citable passages. ")
+end
+
+callback!(
+    app, 
+    Output("results", "children"), 
+    Input("query", "value"),
+    State("ms", "value"),
+    State("txt", "value"),
     ) do query_value, ms_value, txt_value
     
     passages_for_ms = select_texts(normalizededition, ms_value, txt_value)
@@ -219,7 +244,7 @@ callback!(
         dcc_markdown(mdcontent)
         
     else
-        "Selected corpus has $(length(passages_for_ms)) passages. "
+        ""
     end
 end
 

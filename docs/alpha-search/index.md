@@ -10,6 +10,7 @@ parent: Dashboards from the Homer Multitext project
 
 ## Release notes
 
+- **0.2.3**: cosmetic changes to HTML layout
 - **0.2.2**: run dashboard as separate Julia project
 - **0.2.1**: use published release data, not release candidate data
 - **0.2**: first test version released on https://www.homermultitext.org/alpha-search/
