@@ -5,7 +5,7 @@ Pkg.activate(joinpath(pwd(), "codex-browser"))
 Pkg.instantiate()
 
 
-DASHBOARD_VERSION = "0.2.3"
+DASHBOARD_VERSION = "0.2.4"
 # Variables configuring the app:  
 #
 #  1. location  of the assets folder (CSS, etc.)
@@ -73,7 +73,7 @@ function facs(pg)
             html_h6("Folio $(objectcomponent(pgurn))"),  
 
             html_p(
-                "(The image is linked to a pannable/zoomable view in the HMT Image Citation Tool.)"),
+                "The image is linked to a pannable/zoomable view in the HMT Image Citation Tool."),
  
             dcc_markdown(
                 linkedMarkdownImage(ict, mspage.image, iiifservice; ht=IMG_HEIGHT, caption="$(pg)")
@@ -115,26 +115,39 @@ app.layout = html_div() do
     html_h1() do 
         dcc_markdown("HMT project: simple codex facsimiles")
     end,
-    html_p("Browse images of $(length(codices)) manuscripts"),
+    dcc_markdown("""### Browse images of **$(length(codices))** manuscripts
 
-    html_h6("Instructions"),
-    dcc_markdown(
-        """- Choose a manuscript and page to view
-        """
+    """),
+
+
+    html_div( 
+        className = "panel",
+        children = [
+
+
+            html_div(
+                className = "columnl",
+                children = [
+                dcc_markdown("*Clear the page selection (if any), and choose a manuscript*:")
+                dcc_radioitems(
+                    id = "ms",
+                    options = msmenu(codices),
+                    value = defaultms
+                )
+                ]
+            ),
+
+            html_div(
+                className = "columnr",
+                children = [
+                    dcc_markdown("*Choose a page*:")
+                    dcc_dropdown(id = "pg")
+                ]
+            ),
+        ]
     ),
-  
-    html_h6("Manuscript"),
-    dcc_radioitems(
-        id = "ms",
-        options = msmenu(codices),
-        value = defaultms
-    ),
 
-    html_div() do
-        html_h6("Page"),
-        dcc_dropdown(id = "pg")
-    end,
-
+    dcc_markdown("## Display page"),
     html_div(id = "display")
 end
 

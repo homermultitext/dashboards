@@ -1,0 +1,19 @@
+
+.panel {
+  padding-left: 2em;
+  padding-right: 2em;
+}
+.panel:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+  .columnl {
+    float: left;
+    width: 45%;
+  }
+  
+  .columnr {
+    float: left;
+    width: 45%;
+  }
