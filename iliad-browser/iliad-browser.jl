@@ -5,7 +5,7 @@ Pkg.activate(joinpath(pwd(), "iliad-browser"))
 Pkg.instantiate()
 
 
-DASHBOARD_VERSION = "0.2.1"
+DASHBOARD_VERSION = "0.2.2"
 
 # Variables configuring the app:  
 #
@@ -73,11 +73,15 @@ app.layout = html_div() do
 
 
   
-    html_h6("Iliad passage?"),
-    dcc_markdown("Enter `book.line` (e.g., `1.1`) followed by return."),
+    
+    dcc_markdown("""
+    Enter `book.line` (e.g., `1.1`) followed by return.
+    
+    *Iliad passage*?
+    """),
     html_div(
         style=Dict("max-width" => "200px"),
-        dcc_input(id = "iliad", value = "", type = "text", debounce = true)
+        dcc_input(id = "iliad", value = "", type = "text", debounce = true, placeholder="1.1")
     ),
 
 
@@ -86,7 +90,7 @@ app.layout = html_div() do
     html_div(id="pagedisplay")
 end
 
-function iliadindex(psg::AbstractString, indices::Vector{TextOnPage})
+function iliadindex(psg::AbstractString, indices::Vector{TextOnPage}, codexlist::Vector{Codex})
     query = addpassage(ILIAD, psg)
     psglist = []
     for idx in indices
@@ -94,17 +98,18 @@ function iliadindex(psg::AbstractString, indices::Vector{TextOnPage})
         push!(psglist, match)
     end
     flatlist = psglist |> Iterators.flatten |> collect
-    opting = []
+    optionslist = []
     for pr in flatlist
-        pgurn = pr[2]
-        pgid = objectcomponent(pgurn)
-        msid = collectioncomponent(dropversion(pgurn))
-        lbl = "Page $(pgid) in manuscript $(msid)"
-        push!(opting,
-        (label = lbl, value = string(pgurn)))
+        pgid = objectcomponent(pr[2])
+        codexmatches = filter(c -> urn(c) == dropobject(pr[2]), codexlist)
+        if ! isempty(codexmatches)
+            codex = codexmatches[1]
+            lbl = "Page $(pgid) in manuscript $(label(codex))"
+            push!(optionslist,
+            (label = lbl, value = string(pr[2])))
+        end
     end
-
-    opting
+    optionslist
 end
 
 
@@ -133,8 +138,11 @@ callback!(app,
     Input("iliad", "value"),
     prevent_initial_call=true
     ) do iliad_psg
-    hdg = dcc_markdown("##### Pages including *Iliad* $(iliad_psg)")
-    optlist = iliadindex(iliad_psg, indexes)
+    
+    optlist = iliadindex(iliad_psg, indexes, codices)
+    hdg = isempty(optlist) ? 
+        dcc_markdown("### No pages indexed to *Iliad* $(iliad_psg)") : 
+        dcc_markdown("#### Pages including *Iliad* $(iliad_psg)")
    (hdg, optlist)
 end
 
