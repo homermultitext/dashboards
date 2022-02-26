@@ -46,13 +46,11 @@ end
 (codices, releaseinfo) = loadhmtdata(dataurl)
 
 
-# Kludge until bug in Codex constructor losing labelling info (!) is fixed...
+"""Create menu options for list of codices."""
 function msmenu(codd::Vector{Codex})
     opts = []
     for c in codd
-        lbl = c.pages[1].urn |> dropversion |> collectioncomponent
-        coll = c.pages[1].urn |> dropobject
-        push!(opts, (label = "Manuscript $(lbl)", value = string(coll)))
+        push!(opts, (label = "$(label(c))", value = string(urn(c))))
     end
     opts
 end
