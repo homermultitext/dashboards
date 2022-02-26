@@ -31,22 +31,33 @@ using CitableObject, CitableObject.CexUtils
 using CiteEXchange
 
 NAMES = Cite2Urn("urn:cite2:hmt:pers.v1:")
-
+PLACES = Cite2Urn("urn:cite2:hmt:place.v1:")
 
 #df = CSV.File(Downloads.download(NAMES_URL), delim = "|", header = 2) |> DataFrame
 
 
 function loadauthlists(url)
     cexsrc = Downloads.download(url) |> read |> String
-    tuplelist = []
+    libinfo = blocks(cexsrc, "citelibrary")[1]
+    infoparts = split(libinfo.lines[1], "|") 
+
+
+    perstuples = []
     for ln in collectiondata(cexsrc, NAMES)
         cols = split(ln, "|")
-        push!(tuplelist, (label = cols[4], urn = cols[1]))
+        push!(perstuples, ( label = cols[4], urn = cols[1], description = cols[5]))
     end
-    DataFrame(tuplelist)
+
+    placetuples = []
+    for ln in collectiondata(cexsrc, PLACES)
+        cols = split(ln, "|")
+        push!(placetuples, (label = cols[2], urn = cols[1], description = cols[3]))
+    end
+
+    (DataFrame(perstuples), DataFrame(placetuples), infoparts[2])
 end
 
-namesdf = loadauthlists(dataurl)
+(namesdf, placesdf, versioninfo) = loadauthlists(dataurl)
 
 
 app = if haskey(ENV, "URLBASE")
@@ -60,7 +71,7 @@ app.layout = html_div() do
     *Dashboard version*: **$(DASHBOARD_VERSION)**
     
           
-    *Data version*: **current main branch of [github repository](https://github.com/homermultitext/hmt-authlists)**
+    *Data version*: **$(versioninfo)** ([source](https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex))
     """),
     html_h1("Search HMT authority lists:  personal names"),
     dcc_markdown(
