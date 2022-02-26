@@ -5,7 +5,7 @@ Pkg.activate(joinpath(pwd(), "iliad-browser"))
 Pkg.instantiate()
 
 
-DASHBOARD_VERSION = "0.2.2"
+DASHBOARD_VERSION = "0.3.0"
 
 # Variables configuring the app:  
 #
