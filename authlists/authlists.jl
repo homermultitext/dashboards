@@ -6,7 +6,7 @@ Pkg.instantiate()
 
 
 
-DASHBOARD_VERSION = "0.2.2"
+DASHBOARD_VERSION = "0.3.0"
 # Variables configuring the app:  
 #
 #  1. location  of the assets folder (CSS, etc.)
@@ -19,12 +19,34 @@ assets = joinpath(pwd(), "authlists", "assets")
 DEFAULT_PORT = 8052
 NAMES_URL = "https://raw.githubusercontent.com/homermultitext/hmt-authlists/master/data/hmtnames.cex"
 
+
+
+
+dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex"
+
 using Dash
-using Downloads, CSV, DataFrames
+using Downloads
+using CSV, DataFrames
+using CitableObject, CitableObject.CexUtils
+using CiteEXchange
+
+NAMES = Cite2Urn("urn:cite2:hmt:pers.v1:")
 
 
-df = CSV.File(Downloads.download(NAMES_URL), delim = "|", header = 2) |> DataFrame
+#df = CSV.File(Downloads.download(NAMES_URL), delim = "|", header = 2) |> DataFrame
 
+
+function loadauthlists(url)
+    cexsrc = Downloads.download(url) |> read |> String
+    tuplelist = []
+    for ln in collectiondata(cexsrc, NAMES)
+        cols = split(ln, "|")
+        push!(tuplelist, (label = cols[4], urn = cols[1]))
+    end
+    DataFrame(tuplelist)
+end
+
+namesdf = loadauthlists(dataurl)
 
 
 app = if haskey(ENV, "URLBASE")
@@ -50,8 +72,8 @@ app.layout = html_div() do
     
     dash_datatable(
         id="namestable",
-        columns=[Dict("name" =>i, "id" => i) for i in names(df)],
-        data = Dict.(pairs.(eachrow(df))),
+        columns=[Dict("name" =>i, "id" => i) for i in names(namesdf)],
+        data = Dict.(pairs.(eachrow(namesdf))),
         filter_action="native",
         sort_action="native",
         sort_mode="multi",
