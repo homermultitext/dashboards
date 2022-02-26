@@ -33,9 +33,6 @@ using CiteEXchange
 NAMES = Cite2Urn("urn:cite2:hmt:pers.v1:")
 PLACES = Cite2Urn("urn:cite2:hmt:place.v1:")
 
-#df = CSV.File(Downloads.download(NAMES_URL), delim = "|", header = 2) |> DataFrame
-
-
 function loadauthlists(url)
     cexsrc = Downloads.download(url) |> read |> String
     libinfo = blocks(cexsrc, "citelibrary")[1]
@@ -73,7 +70,7 @@ app.layout = html_div() do
           
     *Data version*: **$(versioninfo)** ([source](https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex))
     """),
-    html_h1("Search HMT authority lists:  personal names"),
+    html_h1("Search HMT authority lists"),
     dcc_markdown(
     """
     Search data by filling in a `filter data` value for a column (just below the column heading).
@@ -81,21 +78,62 @@ app.layout = html_div() do
 
     ),
     
-    dash_datatable(
-        id="namestable",
-        columns=[Dict("name" =>i, "id" => i) for i in names(namesdf)],
-        data = Dict.(pairs.(eachrow(namesdf))),
-        filter_action="native",
-        sort_action="native",
-        sort_mode="multi",
-        column_selectable="single",
-        row_selectable="multi",
-        selected_columns=[],
-        selected_rows=[],
-        page_action="native",
-        page_current= 0,
-        page_size= 10
+
+    dcc_tabs(id="authtabs",
+        value="persons",
+        children=[
+        dcc_tab(label="Personal names", value="persons"),
+        dcc_tab(label="Place names", value="places"),
+        ]
     )
+    html_div(id="authoritylisttable")
+
+    # This is tab 1
+    #=
+    =#
+  
+end
+
+
+callback!(app,
+    Output("authoritylisttable", "children"),
+    Input("authtabs", "value")
+) do tab
+    if  tab == "persons"
+        dash_datatable(
+            id="namestable",
+            columns=[Dict("name" =>i, "id" => i) for i in names(namesdf)],
+            data = Dict.(pairs.(eachrow(namesdf))),
+            filter_action="native",
+            sort_action="native",
+            sort_mode="multi",
+            column_selectable="single",
+            row_selectable="multi",
+            selected_columns=[],
+            selected_rows=[],
+            page_action="native",
+            page_current= 0,
+            page_size= 10
+        )
+
+
+    elseif tab == "places"
+        dash_datatable(
+            id="placestable",
+            columns=[Dict("name" =>i, "id" => i) for i in names(placesdf)],
+            data = Dict.(pairs.(eachrow(placesdf))),
+            filter_action="native",
+            sort_action="native",
+            sort_mode="multi",
+            column_selectable="single",
+            row_selectable="multi",
+            selected_columns=[],
+            selected_rows=[],
+            page_action="native",
+            page_current= 0,
+            page_size= 10
+        )
+    end
 end
 
 run_server(app, "0.0.0.0", DEFAULT_PORT, debug=true)
