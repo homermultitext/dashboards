@@ -4,7 +4,7 @@ using Pkg
 Pkg.activate(joinpath(pwd(), "thermometer"))
 Pkg.instantiate()
 
-DASHBOARD_VERSION = "0.2.1"
+DASHBOARD_VERSION = "0.3.0"
 
 # Variables configuring the app:  
 #
@@ -19,12 +19,12 @@ DEFAULT_PORT = 8060
 
 dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex"
 
-
 using Dash
 
 using CitableAnnotations
 using CitableBase
 using CitableCorpus
+using CitableImage
 using CitableObject
 using CitablePhysicalText
 using CitableText
@@ -40,6 +40,8 @@ and release info from HMT publication.
 """
 function loadhmtdata(url)
     cexsrc = Downloads.download(url) |> read |> String
+    allimgs = fromcex(cexsrc, ImageCollection)
+    imgs = filter(c -> length(c) > 2, allimgs)
     mss = fromcex(cexsrc, Codex)
     indexing = fromcex(cexsrc, TextOnPage)
     ctscatalog = fromcex(cexsrc, TextCatalogCollection)
@@ -52,10 +54,10 @@ function loadhmtdata(url)
     libinfo = blocks(cexsrc, "citelibrary")[1]
     infoparts = split(libinfo.lines[1], "|")    
 
-    (mss, indexing, ctscatalog, normalizedtexts, infoparts[2])
+    (imgs, mss, indexing, ctscatalog, normalizedtexts, infoparts[2])
 end
 
-(codices, indexes, textcatalog, normalizededition, releaseinfo) = loadhmtdata(dataurl)
+(images,    codices, indexes, textcatalog, normalizededition, releaseinfo) = loadhmtdata(dataurl)
 
 
 """Format title of a text catalog entry in markdown."""
@@ -164,19 +166,16 @@ end
 
 intro = """
 
-### Current release
+**Current release**:  The complete contents of the HMT project's archive are published in plain-text files in the CITE EXchange format (CEX). The current published release  is always available in a file named `hmt-current.cex` in the project's archival github repository, in the `archive/releases-cex`  directory. (Here is a link to [the raw CEX file](https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex).)
 
-The complete contents of the HMT project's archive are published in plain-text files in the CITE EXchange format (CEX). The current published release  is always available in a file named `hmt-current.cex` in the project's archival github repository, in the `archive/releases-cex`  directory. (Here is a link to [the raw CEX file](https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex).)
-
-### Earlier releases
-
-Earlier releases are available in subdirectories of `archive/releases-cex` by year.  In 2018, the HMT project published 5 releases; in 2020, 9 releases.
+**Earlier releases**: Earlier releases are available in subdirectories of `archive/releases-cex` by year.  In 2018, the HMT project published 5 releases; in 2020, 9 releases.
 
 Releases in 2022 are sequentially named `hmt-2022`**ID**`.cex` where **ID** is a successive letter of the alphabet.
 
 """
 
-function sums(mslist, normededitions, textcat)
+function sums(imgcollections, mslist, normededitions, textcat)
+    imgcount = length.(imgcollections) |> sum
     pagecount = map(ms -> length(ms), mslist) |> sum
     mscount = length(mslist)
 
@@ -187,12 +186,15 @@ function sums(mslist, normededitions, textcat)
     commentcount = filter(psg-> endswith(passagecomponent(psg.urn), "comment"),  scholia) |> length
     wordcount = map(psg -> split(psg.text) |> length, normalizededition) |> sum
     doccount = length(textcat)
-    """The current release of the HMT archive publishes:
-    
-- **$(pagecount) pages** in **$(mscount) manuscripts**
-- **$(wordcount) words** in diplomatic editions of **$(doccount) cataloged documents**
-- diplomatic and normalized editions of **$(iliadlines) lines** of the *Iliad*
-- diplomatic and normalized editions of **$(commentcount) scholia**
+    """## Summary
+The current release of the HMT archive publishes:
+  
+
+> - **$(imgcount)** cataloged images in **$(length(images)) collections**
+> - **$(pagecount) pages** in **$(mscount) manuscripts**
+> - **$(wordcount) words** in diplomatic editions of **$(doccount) cataloged documents**
+> - diplomatic and normalized editions of **$(iliadlines) lines** of the *Iliad*
+> - diplomatic and normalized editions of **$(commentcount) scholia**
 
 """    
 end
@@ -207,30 +209,42 @@ app.layout = html_div() do
     dcc_markdown("*Dashboard version*: **$(DASHBOARD_VERSION)**"),
 
 
-    html_h1("Overview of contents: $(releaseinfo)"),
-    dcc_markdown(
-        sums(codices, normalizededition, textcatalog)
-    ),
-
-
+    html_h1("$(releaseinfo)"),
+    
+   
     dcc_markdown(intro),
 
+    dcc_markdown(
+        sums(images, codices, normalizededition, textcatalog)
+    ),
 
-    html_h2("Images"),
-    "TBA",
+    html_div(className = "panel",
+        children = [
+            html_div(
+                className = "columnl",
+                children = [
+                    dcc_markdown("## Images")
+                ]
+            ),
+            html_div(
+                className = "columnr",
+                children = [
+                    dcc_markdown("""## Manuscripts
+
+**$(length(codices))** cataloged manuscripts
+                
+Explore manuscripts with the [codex-browser dashboard](https://www.homermultitext.org/codex-browser/).
+"""
+                    ),
+                    dcc_graph(figure = pagesgraph(codices)),
+                ]
+            )
+        ]
+    ),
+   
 
 
-    html_h2("Manuscripts"),
-
-    dcc_graph(figure = pagesgraph(codices)),
-    
-    dcc_markdown("""
-    **$(length(codices))** cataloged manuscripts
-
-
-    Explore manuscripts with the [codex-browser dashboard](https://www.homermultitext.org/codex-browser/).
-
-"""),
+   
 
 
     html_h2("Indexes to manuscripts"),
