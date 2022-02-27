@@ -6,7 +6,7 @@ Pkg.instantiate()
 
 
 
-DASHBOARD_VERSION = "0.2.2"
+DASHBOARD_VERSION = "0.3.0"
 # Variables configuring the app:  
 #
 #  1. location  of the assets folder (CSS, etc.)
@@ -19,12 +19,40 @@ assets = joinpath(pwd(), "authlists", "assets")
 DEFAULT_PORT = 8052
 NAMES_URL = "https://raw.githubusercontent.com/homermultitext/hmt-authlists/master/data/hmtnames.cex"
 
+dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex"
+
 using Dash
-using Downloads, CSV, DataFrames
+using Downloads
+using CSV, DataFrames
+using CitableObject, CitableObject.CexUtils
+using CiteEXchange
 
 
-df = CSV.File(Downloads.download(NAMES_URL), delim = "|", header = 2) |> DataFrame
+NAMES = Cite2Urn("urn:cite2:hmt:pers.v1:")
+PLACES = Cite2Urn("urn:cite2:hmt:place.v1:")
 
+function loadauthlists(url)
+    cexsrc = Downloads.download(url) |> read |> String
+    libinfo = blocks(cexsrc, "citelibrary")[1]
+    infoparts = split(libinfo.lines[1], "|") 
+
+
+    perstuples = []
+    for ln in collectiondata(cexsrc, NAMES)
+        cols = split(ln, "|")
+        push!(perstuples, ( label = cols[4], urn = cols[1], description = cols[5], status = cols[6], redirect = cols[7]))
+    end
+
+    placetuples = []
+    for ln in collectiondata(cexsrc, PLACES)
+        cols = split(ln, "|")
+        push!(placetuples, (label = cols[2], urn = cols[1], description = cols[3], status = cols[5], redirect = cols[6]))
+    end
+
+    (DataFrame(perstuples), DataFrame(placetuples), infoparts[2])
+end
+
+(namesdf, placesdf, versioninfo) = loadauthlists(dataurl)
 
 
 app = if haskey(ENV, "URLBASE")
@@ -33,14 +61,17 @@ else
     dash(assets_folder = assets)    
 end
 
-app.layout = html_div() do
+
+#app = dash(external_stylesheets=external_stylesheets)
+
+app.layout = html_div([
     dcc_markdown("""
     *Dashboard version*: **$(DASHBOARD_VERSION)**
     
           
-    *Data version*: **current main branch of [github repository](https://github.com/homermultitext/hmt-authlists)**
+    *Data version*: **$(versioninfo)** ([source](https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex))
     """),
-    html_h1("Search HMT authority lists:  personal names"),
+    html_h1("Search HMT authority lists"),
     dcc_markdown(
     """
     Search data by filling in a `filter data` value for a column (just below the column heading).
@@ -48,21 +79,57 @@ app.layout = html_div() do
 
     ),
     
-    dash_datatable(
-        id="namestable",
-        columns=[Dict("name" =>i, "id" => i) for i in names(df)],
-        data = Dict.(pairs.(eachrow(df))),
-        filter_action="native",
-        sort_action="native",
-        sort_mode="multi",
-        column_selectable="single",
-        row_selectable="multi",
-        selected_columns=[],
-        selected_rows=[],
-        page_action="native",
-        page_current= 0,
-        page_size= 10
-    )
+    
+    dcc_tabs(id="authoritylists", value="persons", children=[
+        dcc_tab(label="Personal names", value="persons"),
+        dcc_tab(label="Place names", value="places"),
+    ]),
+    html_div(id="authlisttable")
+])
+
+callback!(app,
+    Output("authlisttable", "children"),
+    Input("authoritylists", "value")
+) do tab
+    if tab == "persons"
+        return html_div([
+            html_h3("Personal names"),
+            dash_datatable(
+                id="namestable",
+                columns=[Dict("name" =>i, "id" => i) for i in names(namesdf)],
+                data = Dict.(pairs.(eachrow(namesdf))),
+                filter_action="native",
+                sort_action="native",
+                sort_mode="multi",
+                column_selectable="single",
+                row_selectable="multi",
+                selected_columns=[],
+                selected_rows=[],
+                page_action="native",
+                page_current= 0,
+                page_size= 10
+            )
+        ])
+    elseif tab == "places"
+        return html_div([
+            html_h3("Place names"),
+            dash_datatable(
+                id="placestable",
+                columns=[Dict("name" =>i, "id" => i) for i in names(placesdf)],
+                data = Dict.(pairs.(eachrow(placesdf))),
+                filter_action="native",
+                sort_action="native",
+                sort_mode="multi",
+                column_selectable="single",
+                row_selectable="multi",
+                selected_columns=[],
+                selected_rows=[],
+                page_action="native",
+                page_current= 0,
+                page_size= 10
+            )
+        ])
+    end
 end
 
 run_server(app, "0.0.0.0", DEFAULT_PORT, debug=true)
