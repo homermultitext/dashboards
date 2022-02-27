@@ -5,7 +5,7 @@ Pkg.activate(joinpath(pwd(), "iliad-browser"))
 Pkg.instantiate()
 
 
-DASHBOARD_VERSION = "0.3.0"
+DASHBOARD_VERSION = "0.4.0"
 
 # Variables configuring the app:  
 #
@@ -46,13 +46,13 @@ function loadhmtdata(url::AbstractString)
     cexsrc = Downloads.download(url) |> read |> String
     codexlist = fromcex(cexsrc, Codex)
     indexing = fromcex(cexsrc, TextOnPage)
+    dsecollectoin = fromcex(cexsrc, DSECollection)[1]
     libinfo = blocks(cexsrc, "citelibrary")[1]
     infoparts = split(libinfo.lines[1], "|")
-    (codexlist, indexing, infoparts[2])
+    (codexlist, indexing, dsecollectoin, infoparts[2])
 end
 
-(codices, indexes, releaseinfo) = loadhmtdata(dataurl)
-
+(codices, indexes, dserecords, releaseinfo) = loadhmtdata(dataurl)
 
 app = if haskey(ENV, "URLBASE")
     dash(assets_folder = assets, url_base_pathname = ENV["URLBASE"])
@@ -70,9 +70,6 @@ app.layout = html_div() do
     html_h1() do 
         dcc_markdown("HMT project: browse manuscripts by *Iliad* line")
     end,
-
-
-  
     
     dcc_markdown("""
     Enter `book.line` (e.g., `1.1`) followed by return.
@@ -90,7 +87,10 @@ app.layout = html_div() do
     html_div(id="pagedisplay")
 end
 
-function iliadindex(psg::AbstractString, indices::Vector{TextOnPage}, codexlist::Vector{Codex})
+function iliadindex(psg::AbstractString, 
+    indices::Vector{TextOnPage}, 
+    dsec::DSECollection,
+    codexlist::Vector{Codex})
     query = addpassage(ILIAD, psg)
     psglist = []
     for idx in indices
@@ -109,7 +109,22 @@ function iliadindex(psg::AbstractString, indices::Vector{TextOnPage}, codexlist:
             (label = lbl, value = string(pr[2])))
         end
     end
-    optionslist
+
+
+    for dsetriple in filter(tripl -> urncontains(query, passage(tripl)), dsec)
+        pgid = objectcomponent(surface(dsetriple))
+        codexmatches = filter(c -> urn(c) == dropobject(surface(dsetriple)), codexlist)
+        if ! isempty(codexmatches)
+            codex = codexmatches[1]
+            lbl = "Page $(pgid) in manuscript $(label(codex))"
+            push!(optionslist,
+            (label = lbl, value = string(surface(dsetriple))))
+        end
+      
+    end
+
+
+    optionslist |> unique
 end
 
 
@@ -139,7 +154,7 @@ callback!(app,
     prevent_initial_call=true
     ) do iliad_psg
     
-    optlist = iliadindex(iliad_psg, indexes, codices)
+    optlist = iliadindex(iliad_psg, indexes, dserecords, codices)
     hdg = isempty(optlist) ? 
         dcc_markdown("### No pages indexed to *Iliad* $(iliad_psg)") : 
         dcc_markdown("#### Pages including *Iliad* $(iliad_psg)")
