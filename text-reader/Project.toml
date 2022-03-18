@@ -1,0 +1,13 @@
+[deps]
+CitableBase = "d6f014bd-995c-41bd-9893-703339864534"
+CitableCorpus = "cf5ac11a-93ef-4a1a-97a3-f6af101603b5"
+CitableText = "41e66566-473b-49d4-85b7-da83b66615d8"
+Dash = "1b08a953-4be3-4667-9a23-3db579824955"
+HmtArchive = "1e7b0059-6550-4515-8382-5d3f2046a0a7"
+
+[compat]
+CitableBase = "10"
+CitableCorpus = "0.12"
+CitableText = "0.15"
+Dash = "1"
+HmtArchive = "0.8"
