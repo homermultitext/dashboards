@@ -90,6 +90,7 @@ function textgraph(corpus)
     end
 end
 
+#=
 """Compose a Plotly figure graphing number of pages per codex.
 """
 function pagesgraph(codd)
@@ -110,6 +111,7 @@ function pagesgraph(codd)
     Plot( bar(x=tbl.ms, y=tbl.pages), graphlayout)
 
 end
+=#
 
 """Compose a Plotly figure graphing coverage by book
 of Iliad indexing for different MSS.

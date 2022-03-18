@@ -49,10 +49,10 @@ function loadhmtdata()
     ctscatalog = hmt_textcatalog(cexsrc)
     normalizedtexts = hmt_normalized(cexsrc)
 
-    (imgs, mss, indexing, ctscatalog, normalizedtexts, hmt_releaseinfo(cexsrc))
+    (imgs, mss, indexing, ctscatalog, normalizedtexts, hmt_releaseinfo(cexsrc), cexsrc)
 end
 
-(images, codices, indexes, textcatalog, normalizededition, releaseinfo) = loadhmtdata()
+(images, codices, indexes, textcatalog, normalizededition, releaseinfo, src) = loadhmtdata()
 
 
 intro = """
@@ -88,6 +88,54 @@ The current release of the HMT archive publishes:
 > - diplomatic and normalized editions of **$(commentcount) scholia**
 
 """    
+end
+
+
+"""Compose a Plotly figure graphing number of pages per codex.
+"""
+function pagesgraph(src)
+    tbl = coltbl_pagecounts(src) 
+
+    graphlayout =  Layout(
+        title="Pages per manuscript",
+        xaxis_title = "Manuscript",
+        yaxis_title = "pages"
+
+    )
+    Plot( bar(x=tbl.ms, y=tbl.pages), graphlayout)
+
+end
+
+"""Compose a Plotly figure graphing number of images per image collection.
+"""
+function imagesgraph(imgs)
+    tbl = coltbl_imagecounts(imgs) 
+
+    graphlayout =  Layout(
+        title="Images per collection",
+        xaxis_title = "collection",
+        yaxis_title = "images"
+
+    )
+    Plot( bar(x=tbl.collection, y=tbl.count), graphlayout)
+
+end
+
+
+function imagesbybook(src)
+    (titles, tbls) = coltblv_indexedimagesbybook(src)
+    barlist = GenericTrace{Dict{Symbol, Any}}[]
+    for (idx, title) in enumerate(titles)
+        push!(barlist, bar(name=title, x=tbls[idx].book, y=tbls[idx].count))
+    end
+
+    graphlayout =  Layout(
+        title="Indexing images to Iliad lines",
+        xaxis_title = "Book of Iliad",
+        yaxis_title = "Images indexed"
+    )
+    Plot(barlist, graphlayout)
+
 end
 
 app = if haskey(ENV, "URLBASE")
@@ -130,13 +178,17 @@ app.layout = html_div() do
             html_div(
                 className = "columnl",
                 children = [
-                    dcc_markdown("#### Cataloged images")
+                    dcc_markdown("#### Cataloged images"),
+                    
+                    dcc_graph(figure = imagesgraph(images))
+                    
                 ]
             ),
             html_div(
                 className = "columnr",
                 children = [
-                    dcc_markdown("#### Images indexed to *Iliad* lines")
+                    dcc_markdown("#### Images indexed to *Iliad* lines"),
+                    dcc_graph(figure = imagesbybook(src))
                 ]
             )
         ]
@@ -152,7 +204,8 @@ Explore manuscripts with the [codex-browser](https://www.homermultitext.org/code
             html_div(
                 className = "columnl",
                 children = [
-                    dcc_markdown("#### Cataloged manuscript pages")
+                    dcc_markdown("#### Cataloged manuscript pages"),
+                    dcc_graph(figure = pagesgraph(src))
                 ]
             ),
             html_div(
@@ -170,10 +223,28 @@ Explore manuscripts with the [codex-browser](https://www.homermultitext.org/code
                 
     Explore edited texts with the [alpha-search](https://www.homermultitext.org/alpha-search/) dashboard.
     """),
+    html_div(className = "panel",
+        children = [
+            html_div(
+                className = "columnl",
+                children = [
+                    dcc_markdown("#### Edited passages of the *Iliad*")
+                ]
+            ),
+            html_div(
+                className = "columnr",
+                children = [
+                    dcc_markdown("#### Edited *scholia*")
+                ]
+            )
+        ]
+    ),
+
 
 
     dcc_markdown("""## Other data sets
 
+    (TBA)
     """)
 
 end
@@ -189,3 +260,37 @@ end
 
 
 run_server(app, "0.0.0.0", DEFAULT_PORT, debug=true)
+
+
+
+#= TBA:
+
+#### Quire marks
+
+(TBA)
+
+### Contents of texts
+
+#### Named figures
+
+(TBA)
+
+#### Named places
+
+(TBA)
+
+#### Peoples and ethnic groups
+
+(TBA)
+
+#### The Venetus A manuscript
+
+
+##### Critical signs
+
+(TBA)
+
+##### Numbered simile markers
+
+
+=#
