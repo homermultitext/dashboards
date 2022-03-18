@@ -35,8 +35,6 @@ using Tables
 using PlotlyJS
 
 
-src = hmt_cex()
-
 """ Extract text catalog, normalized editions of texts,
 and release info from HMT publication.
 """
@@ -99,41 +97,95 @@ else
 end
 
 app.layout = html_div() do
-    dcc_markdown("*Dashboard version*: **$(DASHBOARD_VERSION)**"),
-
-
-    html_h1("$(releaseinfo)"),
+  
+    dcc_markdown("""*Dashboard version*: **$(DASHBOARD_VERSION)** ([version notes](https://homermultitext.github.io/dashboards/thermometer/))
     
-   
-    dcc_markdown(intro),
+    *Data version*: **$(releaseinfo)**
+    """),  
 
+
+    html_h1("Overview of current release"),
+    dcc_checklist(
+        id = "showabout",
+        options = [
+            Dict("label" => "About HMT releases", "value" => "show")
+        ]
+    ),
+    html_div(id="about", children=""),
+    
+
+    html_div(className = "abstract",
+    children = [
     dcc_markdown(
         sums(images, codices, normalizededition, textcatalog)
-    ),
+    )]),
 
+    # Digital images:
+    dcc_markdown("""## Digital images
+
+    Explore digital images with the [lightbox](https://www.homermultitext.org/lightbox/) dashboard.
+    """),
     html_div(className = "panel",
         children = [
             html_div(
                 className = "columnl",
                 children = [
-                    dcc_markdown("## Images")
+                    dcc_markdown("#### Cataloged images")
                 ]
             ),
             html_div(
                 className = "columnr",
                 children = [
-                    dcc_markdown("""## Manuscripts
-
-**$(length(codices))** cataloged manuscripts
-                
-Explore manuscripts with the [codex-browser dashboard](https://www.homermultitext.org/codex-browser/).
-"""
-                    )
-                   
+                    dcc_markdown("#### Images indexed to *Iliad* lines")
                 ]
             )
         ]
-    )
+    ),
+
+    # Codices
+    dcc_markdown("""## Manuscripts
+                
+Explore manuscripts with the [codex-browser](https://www.homermultitext.org/codex-browser/) dashboard.
+"""),
+    html_div(className = "panel",
+        children = [
+            html_div(
+                className = "columnl",
+                children = [
+                    dcc_markdown("#### Cataloged manuscript pages")
+                ]
+            ),
+            html_div(
+                className = "columnr",
+                children = [
+                    dcc_markdown("#### Fully edited manuscript pages")
+                ]
+            )
+        ]
+    ),
+
+
+
+    dcc_markdown("""## Edited texts
+                
+    Explore edited texts with the [alpha-search](https://www.homermultitext.org/alpha-search/) dashboard.
+    """),
+
+
+    dcc_markdown("""## Other data sets
+
+    """)
+
 end
+
+
+callback!(app, 
+    Output("about", "children"), 
+    Input("showabout", "value")
+    ) do  checkbox
+    checkbox == ["show"] ? dcc_markdown(intro) : ""
+end
+
+
 
 run_server(app, "0.0.0.0", DEFAULT_PORT, debug=true)
