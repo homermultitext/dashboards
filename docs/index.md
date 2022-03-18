@@ -20,6 +20,8 @@ has_children: true
 - alpha-search
 - codex-browser
 - iliad-browser
+- lightbox
+- text-reader
 
 ## Work with authority lists
 
