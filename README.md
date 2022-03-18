@@ -12,8 +12,10 @@ You can use reactive dashboards in your web browser to explore the current publi
 
 1. [alpha-search](https://www.homermultitext.org/alpha-search):  simple alphabetic search of Greek texts in the HMT archive.  Filter by manuscript and/or text.
 1. [codex-browser](https://www.homermultitext.org/codex-browser): visual browser of photographed and documented codices in the HMT archive.
- 1. [lightbox](https://www.homermultitext.org/lightbox/): paged browsing of image collections..  
+1. [lightbox](https://www.homermultitext.org/lightbox/): paged browsing of image collections..  
 1. [iliad-browser](https://www.homermultitext.org/iliad-browser): browse indexed manuscript images by *Iliad* reference.
+1. text-reader: read editions of HMT project texts.
+
 
 ### Reference lists
 
@@ -66,6 +68,7 @@ By default, the dashboards run on the port number listed below.  Open a browser 
     - `codices+local/codex-browser.jl` (default port: `8054`): a version of the `codex-browser.jl` that allows you to include a collection of cataloged local files
 1. `lightbox/lightbox.jl` (default port: `8055`): paged browsing of image collections..    
 1. `iliad-browser/iliad-browser.jl` (default port: `8053`): browse manuscript images by *Iliad* reference.
+1. `text-reader/text-reader` (default port: `8056`): read editions of HMT project texts.
 
 
 #### Reference lists
