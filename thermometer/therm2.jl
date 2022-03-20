@@ -121,7 +121,50 @@ function imagesgraph(imgs)
 
 end
 
+"""Compose a Plotly figure graphing coverage of bifolio images for Venetus B.
+"""
+function vbbifgraph(cexsrc)
+    vbtbl = coltbl_vbbifolios(cexsrc)
+    vbids = map(i -> objectcomponent(i), vbtbl.image)
+    imageonline = map(vbtbl.online) do ok
+        ok ? 1 : 0
+    end
+    graphlayout =  Layout(
+        title = "Online bifiolio images for Venetus B",
+        yaxis_title = "online",
+        yaxis = attr(
+            tickmode = "array",
+            tickvals = [0,1],
+            ticktext = ["Not online", "Online"]
+        )
 
+    )
+    Plot( bar(x=vbids[2:end], y=imageonline[2:end]), graphlayout)
+
+end
+
+function e3bifgraph(cexsrc)
+    e3tbl = coltbl_e3bifolios(cexsrc)
+    ids = map(i -> objectcomponent(i), e3tbl.image)
+    imageonline = map(e3tbl.online) do ok
+        ok ? 1 : 0
+    end
+    graphlayout =  Layout(
+        title = "Online bifiolio images for Upsilon 1.1",
+        yaxis_title = "online",
+        yaxis = attr(
+       
+            tickmode = "array",
+            tickvals = [0,1],
+            ticktext = ["Not online", "Online"]
+        )
+    )
+    Plot( bar(x=ids, y=imageonline), graphlayout)
+
+end
+
+"""For each MS, compose a Ploty figure of indexed images per book of the *Iliad*.
+"""
 function imagesbybook(src)
     (titles, tbls) = coltblv_indexedimagesbybook(src)
     barlist = GenericTrace{Dict{Symbol, Any}}[]
@@ -130,12 +173,11 @@ function imagesbybook(src)
     end
 
     graphlayout =  Layout(
-        title="Indexing images to Iliad lines",
+        title = "Images indexed per book of the Iliad",
         xaxis_title = "Book of Iliad",
         yaxis_title = "Images indexed"
     )
     Plot(barlist, graphlayout)
-
 end
 
 app = if haskey(ENV, "URLBASE")
@@ -194,6 +236,31 @@ app.layout = html_div() do
         ]
     ),
 
+
+    html_div(className = "panel",
+    children = [
+        html_div(
+            className = "columnl",
+            children = [
+                dcc_markdown("#### Bifolio images of the Venetus B"),
+                dcc_graph(figure = vbbifgraph(src))
+                
+                
+            ]
+        ),
+        html_div(
+            className = "columnr",
+            children = [
+                dcc_markdown("#### Bifolio images of the Upsilon 1.1"),
+                dcc_graph(figure = e3bifgraph(src))
+                
+                
+            ]
+        )
+    ]
+),
+
+
     # Codices
     dcc_markdown("""## Manuscripts
                 
@@ -228,13 +295,15 @@ Explore manuscripts with the [codex-browser](https://www.homermultitext.org/code
             html_div(
                 className = "columnl",
                 children = [
-                    dcc_markdown("#### Edited passages of the *Iliad*")
+                    dcc_markdown("#### Edited passages of the *Iliad*\n\n
+                    (TBA)")
                 ]
             ),
             html_div(
                 className = "columnr",
                 children = [
-                    dcc_markdown("#### Edited *scholia*")
+                    dcc_markdown("#### Edited *scholia*\n\n
+                    (TBA)")
                 ]
             )
         ]
