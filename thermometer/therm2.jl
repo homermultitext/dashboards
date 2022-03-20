@@ -131,13 +131,11 @@ function vbbifgraph(cexsrc)
     end
     graphlayout =  Layout(
         title = "Online bifiolio images for Venetus B",
-        yaxis_title = "online",
         yaxis = attr(
             tickmode = "array",
             tickvals = [0,1],
             ticktext = ["Not online", "Online"]
         )
-
     )
     Plot( bar(x=vbids[2:end], y=imageonline[2:end]), graphlayout)
 
@@ -151,7 +149,7 @@ function e3bifgraph(cexsrc)
     end
     graphlayout =  Layout(
         title = "Online bifiolio images for Upsilon 1.1",
-        yaxis_title = "online",
+        
         yaxis = attr(
        
             tickmode = "array",
