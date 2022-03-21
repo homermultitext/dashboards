@@ -282,6 +282,7 @@ app.layout = html_div(className = "w3-container") do
         ]
     ),
 
+    
 
     html_div(
     children = [
