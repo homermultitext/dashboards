@@ -289,7 +289,7 @@ app.layout = html_div(className = "w3-container") do
             className = "w3-col l6 m6 s12 w3-margin-bottom",
             children = [
                 dcc_markdown("#### Bifolio images of the Venetus B"),
-                #dcc_graph(figure = vbbifgraph(src))
+                dcc_graph(figure = vbbifgraph(src))
                 
                 
             ]
@@ -298,7 +298,7 @@ app.layout = html_div(className = "w3-container") do
             className = "w3-col l6 m6 s12 w3-margin-bottom",
             children = [
                 dcc_markdown("#### Bifolio images of the Upsilon 1.1"),
-                #dcc_graph(figure = e3bifgraph(src))
+                dcc_graph(figure = e3bifgraph(src))
                 
                 
             ]
