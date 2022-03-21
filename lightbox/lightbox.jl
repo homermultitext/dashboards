@@ -19,10 +19,8 @@ DEFAULT_PORT = 8055
 
 baseiiifurl = "http://www.homermultitext.org/iipsrv"
 iiifroot = "/project/homer/pyramidal/deepzoom"
-
 ict = "http://www.homermultitext.org/ict2/?"
 
-dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex"
 
 using Dash
 using CitableBase
@@ -38,30 +36,13 @@ iiifservice = IIIFservice(baseiiifurl, iiifroot)
 
 """Construct a table of image collections, and release info.
 """
-function loadhmtdata(url)
+function loadhmtdata()
     src = hmt_cex()
-    #cexsrc = Downloads.download(url) |> read |> String
-    cites = citeids(cexsrc, CitableImage.IMAGE_MODEL)
-    imgcollurns = implementations(cexsrc, CitableImage.IMAGE_MODEL)
-    newblocks = map(u ->  "#!citedata\n" * join(collectiondata(cexsrc, u), "\n"), imgcollurns)
-    imgs = []
-    menupairs = []
-    for i in 1:length(imgcollurns)
-        if length(blocks(newblocks[i])[1].lines) < 5
-            @warn("< 5 data lines for $(imgcollurns[i]) ")
-        else
-            collurn = imgcollurns[i]
-            coll =  fromcex(newblocks[i], ImageCollection, strict = false)
-            push!(imgs, (urn = string(collurn), images = coll))
-            push!(menupairs, cites[i])
-        end
-    end
-
-    libinfo = blocks(cexsrc, "citelibrary")[1]
-    infoparts = split(libinfo.lines[1], "|")  
-    (Tables.columntable(imgs), menupairs, infoparts[2])
+    imgs = hmt_images(src)
+    (imgs, hmt_releaseinfo(src))
 end
-(imagecollections, imagecites, releaseinfo) = loadhmtdata(dataurl)
+#(imagecollections, imagecites, releaseinfo) = loadhmtdata()
+(imagecollections, releaseinfo) = loadhmtdata()
 
 """Compose radio options for selecting image collection."""
 function collectionmenu(citepairs)
@@ -87,8 +68,8 @@ app.layout = html_div() do
     html_h1() do 
         dcc_markdown("HMT project: browse image collections")
     end,
-    dcc_markdown("""Browse tables of **$(length(imagecollections.images))** image collections 
-    cataloging a total of **$(length.(imagecollections.images) |> sum)** images
+    dcc_markdown("""Browse tables of **$(length(imagecollections))** image collections 
+    cataloging a total of **$(length.(imagecollections) |> sum)** images
     """),
 
     
@@ -102,10 +83,11 @@ app.layout = html_div() do
                     dcc_markdown(
                         """*Clear page selection below (if any), then choose an image collection*"""
                     ),
+                    #=
                     dcc_radioitems(
                         id = "collection",
                         options = collectionmenu(imagecites)
-                    )
+                    )=#
                 ]
             ),
 
@@ -158,7 +140,7 @@ app.layout = html_div() do
 
 end
 
-
+#=
 callback!(app, 
     Output("rc_label", "children"), 
     Input("columns", "value"),
@@ -235,6 +217,6 @@ callback!(app,
         end
     end
 end
-
+=#
 
 run_server(app, "0.0.0.0", DEFAULT_PORT, debug=true)
