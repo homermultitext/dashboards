@@ -13,6 +13,7 @@ HmtArchive = "1e7b0059-6550-4515-8382-5d3f2046a0a7"
 PlotlyJS = "f0f68f2c-4968-5e81-91da-67840de0976a"
 SplitApplyCombine = "03a91e81-4c3e-53e1-a0a4-9c0c8f19dd66"
 Tables = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
+TypedTables = "9d95f2ec-7b3d-5a63-8d20-e2491e220bb9"
 
 [compat]
 CitableAnnotations = "0.3"
