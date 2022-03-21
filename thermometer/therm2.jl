@@ -141,6 +141,8 @@ function vbbifgraph(cexsrc)
 
 end
 
+"""Compose a Plotly figure graphing coverage of bifolio images for Upsilon 1.1
+"""
 function e3bifgraph(cexsrc)
     e3tbl = coltbl_e3bifolios(cexsrc)
     ids = map(i -> objectcomponent(i), e3tbl.image)
