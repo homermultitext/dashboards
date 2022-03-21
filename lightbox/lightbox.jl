@@ -32,13 +32,15 @@ using CitableImage
 using CiteEXchange
 using Downloads
 using Tables
+using HmtArchive, HmtArchive.Analysis
 
 iiifservice = IIIFservice(baseiiifurl, iiifroot)
 
 """Construct a table of image collections, and release info.
 """
 function loadhmtdata(url)
-    cexsrc = Downloads.download(url) |> read |> String
+    src = hmt_cex()
+    #cexsrc = Downloads.download(url) |> read |> String
     cites = citeids(cexsrc, CitableImage.IMAGE_MODEL)
     imgcollurns = implementations(cexsrc, CitableImage.IMAGE_MODEL)
     newblocks = map(u ->  "#!citedata\n" * join(collectiondata(cexsrc, u), "\n"), imgcollurns)
