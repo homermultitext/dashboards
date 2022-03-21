@@ -152,9 +152,6 @@ app.layout = html_div() do
         )
     ]),
 
-    
-    
-
     html_div(id = "display")
 
 end
@@ -181,7 +178,7 @@ callback!(app,
     else
         selectedimages = nothing
         for row in Tables.rows(imagecollections)
-            if row.urn == coll
+            if string(row.urn) == string(coll)
                 selectedimages = row.images
             end
         end
@@ -191,10 +188,11 @@ callback!(app,
             ("",[])
         else
             # Somehow I've got this backwards?
-            lb = lightbox(selectedimages, cols = r, rows = c)
+            lb = lightbox(selectedimages[1], cols = r, rows = c)
             lbl = """
-            *Choose a lightbox table from $(pages(lb)) pages for $(coll)* ($(selectedimages |> length) images in $(c) ×  $(r) tables)
+             *Choose a lightbox table from $(pages(lb)) pages for $(coll)* ($(selectedimages |> length) images in $(c) ×  $(r) tables)
             """
+           #lbl = "HELP. $(lb) from $(coll)"
 
             optlist = []
             for pnum in 1:pages(lb)
@@ -229,7 +227,7 @@ callback!(app,
             @warn("No images matched for $(coll)")
             ""
         else
-            lb = lightbox(selectedimages, cols = r, rows = c)
+            lb = lightbox(selectedimages[1], cols = r, rows = c)
             preface = "#### Page $(pg)\n\nThumbnail images are linked to pannable/zoomable images in the HMT Image Citation Tool.\n\n"
             dcc_markdown(preface * mdtable(lb, pg))
         end
