@@ -4,7 +4,7 @@ using Pkg
 Pkg.activate(joinpath(pwd(), "lightbox"))
 Pkg.instantiate()
 
-DASHBOARD_VERSION = "0.2.2"
+DASHBOARD_VERSION = "0.2.3"
 # Variables configuring the app:  
 #
 #  1. location  of the assets folder (CSS, etc.)
