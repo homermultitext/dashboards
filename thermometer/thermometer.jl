@@ -118,7 +118,7 @@ function imagesgraph(imgs)
         yaxis_title = "images"
 
     )
-    Plot( bar(x=tbl.collection, y=tbl.count), graphlayout)
+    Plot( bar(x=tbl.siglum, y=tbl.count), graphlayout)
 
 end
 
@@ -190,11 +190,12 @@ function editedpages(src)
     for (i, ms) in enumerate(pgsbybook[1])
         pgs = pgsbybook[3][i]
         bks = pgsbybook[2][i]
-        bkids = bks |> unique
+        bkstrings = bks |> unique
+        bkids = map(s -> parse(Int64, s), bkstrings)
         t = Table(book = bks, page = pgs)
         countsdict = groupcount(t.book)
         countdata = []
-        for bk in bkids
+        for bk in bkstrings
             push!(countdata, countsdict[bk])
         end
         push!(barlist, bar(name=ms, x=bkids, y=countdata))
@@ -293,7 +294,7 @@ app.layout = html_div() do
     # Codices
     dcc_markdown("""## Manuscripts
                 
-    ☞ Explore manuscripts with the [codex-browser](https://www.homermultitext.org/codex-browser/) dashboard.
+☞ Explore manuscripts with the [codex-browser](https://www.homermultitext.org/codex-browser/) dashboard.
 """),
     html_div(className = "panel",
         children = [

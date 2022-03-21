@@ -4,7 +4,7 @@ using Pkg
 Pkg.activate(joinpath(pwd(), "lightbox"))
 Pkg.instantiate()
 
-DASHBOARD_VERSION = "0.2.1"
+DASHBOARD_VERSION = "0.2.2"
 # Variables configuring the app:  
 #
 #  1. location  of the assets folder (CSS, etc.)
@@ -78,7 +78,7 @@ end
 
 app.layout = html_div() do
     dcc_markdown("""
-    *Dashboard version*: **$(DASHBOARD_VERSION)**
+    *Dashboard version*: **$(DASHBOARD_VERSION)** ([version notes](https://homermultitext.github.io/dashboards/lightbox/))
            
     *Data version*: **$(releaseinfo)**
     """),

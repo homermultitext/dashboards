@@ -11,6 +11,7 @@ parent: Dashboards from the Homer Multitext project
 ## Release notes
 
 
+- **0.4.1**: add link to dashboard version notes
 - **0.4.0**: include data from DSE indexing
 - **0.3.0**: update packages, use proper label for manuscripts
 - **0.2.1**: run dashboard as separate Julia project
