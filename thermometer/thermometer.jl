@@ -204,7 +204,12 @@ function editedpages(src)
     graphlayout =  Layout(
         title = "Edited pages per book of the Iliad",
         xaxis_title = "Book of Iliad",
-        yaxis_title = "Number of pages edited"
+        yaxis_title = "Number of pages edited", 
+        xaxis = attr(
+            tickmode = "array",
+            tickvals = collect(1:24),
+            ticktext = map(i -> string(i), collect(1:24))
+        )
     )
     Plot(barlist, graphlayout)
 end
@@ -259,7 +264,7 @@ app.layout = html_div(className = "w3-container") do
     html_div(
         children = [
             html_div(
-                className = "w3-col l4 m4 w3-margin-bottom",
+                className = "w3-col l4 m4 s12 w3-margin-bottom",
                 children = [
                     dcc_markdown("#### Cataloged images"),
                     
@@ -268,7 +273,7 @@ app.layout = html_div(className = "w3-container") do
                 ]
             ),
             html_div(
-                className = "w3-col l8 m8 w3-margin-bottom",
+                className = "w3-col l8 m8 s12 w3-margin-bottom",
                 children = [
                     dcc_markdown("#### Images indexed to *Iliad* lines"),
                     dcc_graph(figure = imagesbybook(src))
@@ -281,19 +286,19 @@ app.layout = html_div(className = "w3-container") do
     html_div(
     children = [
         html_div(
-            className = "w3-col l6 m6 w3-margin-bottom",
+            className = "w3-col l6 m6 s12 w3-margin-bottom",
             children = [
                 dcc_markdown("#### Bifolio images of the Venetus B"),
-                dcc_graph(figure = vbbifgraph(src))
+                #dcc_graph(figure = vbbifgraph(src))
                 
                 
             ]
         ),
         html_div(
-            className = "w3-col l6 m6 w3-margin-bottom",
+            className = "w3-col l6 m6 s12 w3-margin-bottom",
             children = [
                 dcc_markdown("#### Bifolio images of the Upsilon 1.1"),
-                dcc_graph(figure = e3bifgraph(src))
+                #dcc_graph(figure = e3bifgraph(src))
                 
                 
             ]
@@ -314,14 +319,14 @@ app.layout = html_div(className = "w3-container") do
 
     html_div(children = [
             html_div(
-                className = "w3-col l4 m4 w3-margin-bottom",
+                className = "w3-col l4 m4 s12 w3-margin-bottom",
                 children = [
                     dcc_markdown("#### Cataloged manuscript pages"),
                     dcc_graph(figure = pagesgraph(src))
                 ]
             ),
             html_div(
-                className = "w3-col l8 m8 w3-margin-bottom",
+                className = "w3-col l8 m8 s12 w3-margin-bottom",
                 children = [
                     dcc_markdown("#### Fully edited manuscript pages")
                 ], 
@@ -342,14 +347,14 @@ app.layout = html_div(className = "w3-container") do
 
     html_div(children = [
             html_div(
-                className = "w3-col l6 m6 w3-margin-bottom",
+                className = "w3-col l6 m6 s12 w3-margin-bottom",
                 children = [
                     dcc_markdown("#### Edited passages of the *Iliad*\n\n
                     (TBA)")
                 ]
             ),
             html_div(
-                className = "w3-col l6 m6 w3-margin-bottom",
+                className = "w3-col l6 m6 s12 w3-margin-bottom",
                 children = [
                     dcc_markdown("#### Edited *scholia*\n\n
                     (TBA)")
