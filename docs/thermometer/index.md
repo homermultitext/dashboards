@@ -12,6 +12,7 @@ parent: Dashboards from the Homer Multitext project
 
 ## Notes on released versions
 
+- **0.4.2**: use `w3.css` library for CSS display.
 - **0.4.1**: plot online/not online for bifolio images using scatter plot.
 - **0.4.0**: rewrite using new `HmtArchive.Analysis` module.
 - **0.3.0**: add image data.

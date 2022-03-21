@@ -1,28 +1,10 @@
 
-.narrow {
+.very-narrow {
   margin-left: 25%;
   margin-right: 25%;
 }
 
-
-.panel:after {
-  content: "";
-  display: table;
-  clear: both;
+.narrow {
+  margin-left: 5%;
+  margin-right: 5%;
 }
-.columnl {
-  float: left;
-  width: 45%;
-}
-
-.columnr {
-  float: right;
-  width: 45%;
-}
-
-.abstract {
-  margin-left: 10%;
-  margin-right: 10%;
-}
-  
-
