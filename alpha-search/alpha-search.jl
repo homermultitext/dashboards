@@ -5,7 +5,7 @@ Pkg.activate(joinpath(pwd(), "alpha-search"))
 Pkg.instantiate()
 
 
-DASHBOARD_VERSION = "0.2.3"
+DASHBOARD_VERSION = "0.2.4"
 
 # Variables configuring the app:  
 #
@@ -59,7 +59,7 @@ end
 app.layout = html_div() do
 
     dcc_markdown() do 
-        """*Dashboard version*: **$(DASHBOARD_VERSION)**. 
+        """*Dashboard version*: **$(DASHBOARD_VERSION)** ([version notes](https://homermultitext.github.io/dashboards/alpha-search/))
         
         *Data version*: **$(releaseinfo)**
         """

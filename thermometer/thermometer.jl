@@ -4,7 +4,7 @@ using Pkg
 Pkg.activate(joinpath(pwd(), "thermometer"))
 Pkg.instantiate()
 
-DASHBOARD_VERSION = "0.2.1"
+DASHBOARD_VERSION = "0.4.0"
 
 # Variables configuring the app:  
 #
@@ -16,88 +16,86 @@ DASHBOARD_VERSION = "0.2.1"
 # from the root of the gh repository!
 assets = joinpath(pwd(), "thermometer", "assets")
 DEFAULT_PORT = 8060
-
-dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex"
-
-
 using Dash
 
 using CitableAnnotations
 using CitableBase
 using CitableCorpus
+using CitableImage
 using CitableObject
 using CitablePhysicalText
 using CitableText
 using CiteEXchange
+using HmtArchive
+using HmtArchive.Analysis
 
 using Downloads
 using SplitApplyCombine
 using Tables
+using TypedTables
 using PlotlyJS
+
 
 """ Extract text catalog, normalized editions of texts,
 and release info from HMT publication.
 """
-function loadhmtdata(url)
-    cexsrc = Downloads.download(url) |> read |> String
-    mss = fromcex(cexsrc, Codex)
-    indexing = fromcex(cexsrc, TextOnPage)
-    ctscatalog = fromcex(cexsrc, TextCatalogCollection)
-    corpus = fromcex(cexsrc, CitableTextCorpus)
+function loadhmtdata()
+    cexsrc = hmt_cex()
 
-    normalizedtexts = filter(
-        psg -> endswith(workcomponent(psg.urn), "normalized"),
-        corpus.passages)
+    allimgs = hmt_images(cexsrc)
+    imgs = filter(c -> length(c) > 2, allimgs)
 
-    libinfo = blocks(cexsrc, "citelibrary")[1]
-    infoparts = split(libinfo.lines[1], "|")    
+    mss = hmt_codices(cexsrc)
+    indexing = hmt_pageindex(cexsrc)
+    ctscatalog = hmt_textcatalog(cexsrc)
+    normalizedtexts = hmt_normalized(cexsrc)
 
-    (mss, indexing, ctscatalog, normalizedtexts, infoparts[2])
+    (imgs, mss, indexing, ctscatalog, normalizedtexts, hmt_releaseinfo(cexsrc), cexsrc)
 end
 
-(codices, indexes, textcatalog, normalizededition, releaseinfo) = loadhmtdata(dataurl)
+(images, codices, indexes, textcatalog, normalizededition, releaseinfo, src) = loadhmtdata()
 
 
-"""Format title of a text catalog entry in markdown."""
-function format_title(txt)
-    #txt.group * ", *", txt.work * "* (", txt.version, ")"
-    string(txt)
+intro = """
+
+**Current release**:  The complete contents of the HMT project's archive are published in plain-text files in the CITE EXchange format (CEX). The current published release  is always available in a file named `hmt-current.cex` in the project's archival github repository, in the `archive/releases-cex`  directory. (Here is a link to [the raw CEX file](https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex).)
+
+**Earlier releases**: Earlier releases are available in subdirectories of `archive/releases-cex` by year.  In 2018, the HMT project published 5 releases; in 2020, 9 releases.
+
+Releases in 2022 are sequentially named `hmt-2022`**ID**`.cex` where **ID** is a successive letter of the alphabet.
+
+"""
+
+function sums(imgcollections, mslist, normededitions, textcat)
+    imgcount = length.(imgcollections) |> sum
+    pagecount = map(ms -> length(ms), mslist) |> sum
+    mscount = length(mslist)
+
+    iliadlines = filter(psg -> startswith(workcomponent(psg.urn), "tlg0012.tlg001"), normededitions.passages) |> length
+
+
+    scholia = filter(psg -> startswith(workcomponent(psg.urn), "tlg5026"), normededitions.passages)
+    commentcount = filter(psg-> endswith(passagecomponent(psg.urn), "comment"),  scholia) |> length
+    wordcount = map(psg -> split(psg.text) |> length, normalizededition) |> sum
+    doccount = length(textcat)
+    """## Summary
+The current release of the HMT archive publishes:
+  
+
+> - **$(imgcount)** cataloged images in **$(length(images)) collections**
+> - **$(pagecount) pages** in **$(mscount) manuscripts**
+> - **$(wordcount) words** in diplomatic editions of **$(doccount) cataloged documents**
+> - diplomatic and normalized editions of **$(iliadlines) lines** of the *Iliad*
+> - diplomatic and normalized editions of **$(commentcount) scholia**
+
+"""    
 end
 
-"""Format catalog entries as markdown list"""
-function textlist(textcatalog)
-    lines = []
-    for txt in textcatalog
-        push!(lines, "- " * format_title(txt))
-    end
-    join(lines, "\n")
-end
-
-function textgraph(corpus)
-    iliad = filter(psg -> startswith(workcomponent(psg.urn), "tlg0012.tlg001"), corpus)
-    scholia = filter(psg -> startswith(workcomponent(psg.urn), "tlg5026"), corpus)
-    scholiawords = map(psg -> (psg.urn, split(psg.text) |> length), scholia)
-
-    countingtime = map(s -> (split(workcomponent(s[1]), ".")[2], s[2]), scholiawords)
-    grps = group(pr -> pr[1], countingtime)
-    scholiacounts = []
-    for k in keys(grps)
-        map(pr -> pr[2], grps["msAint"]) |> sum
-
-        #push!(scholiacounts, (ms = k[1], bk = k[2], count = length(grp[k])))
-    end
-end
 
 """Compose a Plotly figure graphing number of pages per codex.
 """
-function pagesgraph(codd)
-    dataseries = []
-    for c in codd
-       siglum = split(urn(c) |> collectioncomponent, ".")[1]
-        push!(dataseries, (ms = siglum, pages = length(c)))
-    end
-    tbl = Tables.columntable(dataseries)
-    
+function pagesgraph(src)
+    tbl = coltbl_pagecounts(src) 
 
     graphlayout =  Layout(
         title="Pages per manuscript",
@@ -109,92 +107,107 @@ function pagesgraph(codd)
 
 end
 
-"""Compose a Plotly figure graphing coverage by book
-of Iliad indexing for different MSS.
+"""Compose a Plotly figure graphing number of images per image collection.
 """
-function indexgraph(indices)
-    data = []
-    for idx in indexes
-        for pr in idx.data
-            txt = pr[1]
-            bk = collapsePassageBy(txt, 1) |> passagecomponent
-            pieces = split(workcomponent(txt), ".")
-            push!(data, (pieces[end], bk))
-        end
-    end
-
-    grp = group(data)
-    counts = []
-    grp = group(data)
-    counts = []
-    for k in keys(grp)
-        push!(counts, (ms = k[1], bk = k[2], count = length(grp[k])))
-    end
-
-
-    mss = map(trpl -> trpl[1], counts) |> unique
-    bks = collect(1:24) .|> string
-
-    dataseries = Dict()
-    for ms in mss   
-        padded = []
-        for bk in bks
-            extract = filter(trp -> trp[1] == ms && trp[2] == bk, counts)
-            isempty(extract) ? push!(padded, (ms = ms,bk = bk,count = 0)) : push!(padded, extract[1])
-        end
-        dataseries[ms] = Tables.columntable(padded)
-    end
-
-    barlist = GenericTrace{Dict{Symbol, Any}}[]
-    for k in keys(dataseries)
-        tbl = dataseries[k]
-        push!(barlist, bar(name=k, x=tbl.bk, y=tbl.count))
-    end
-
+function imagesgraph(imgs)
+    tbl = coltbl_imagecounts(imgs) 
 
     graphlayout =  Layout(
-        title="Coverage indexing MS pages to Iliad lines",
-        xaxis_title = "Book of Iliad",
-        yaxis_title = "Lines indexed"
+        title="Images per collection",
+        xaxis_title = "collection",
+        yaxis_title = "images"
 
+    )
+    Plot( bar(x=tbl.siglum, y=tbl.count), graphlayout)
+
+end
+
+"""Compose a Plotly figure graphing coverage of bifolio images for Venetus B.
+"""
+function vbbifgraph(cexsrc)
+    vbtbl = coltbl_vbbifolios(cexsrc)
+    vbids = map(i -> objectcomponent(i), vbtbl.image)
+    imageonline = map(vbtbl.online) do ok
+        ok ? 1 : 0
+    end
+    graphlayout =  Layout(
+        title = "Online bifiolio images for Venetus B",
+        yaxis = attr(
+            tickmode = "array",
+            tickvals = [0,1],
+            ticktext = ["Not online", "Online"]
+        )
+    )
+    Plot( bar(x=vbids[2:end], y=imageonline[2:end]), graphlayout)
+
+end
+
+"""Compose a Plotly figure graphing coverage of bifolio images for Upsilon 1.1
+"""
+function e3bifgraph(cexsrc)
+    e3tbl = coltbl_e3bifolios(cexsrc)
+    ids = map(i -> objectcomponent(i), e3tbl.image)
+    imageonline = map(e3tbl.online) do ok
+        ok ? 1 : 0
+    end
+    graphlayout =  Layout(
+        title = "Online bifiolio images for Upsilon 1.1",
+        
+        yaxis = attr(
+       
+            tickmode = "array",
+            tickvals = [0,1],
+            ticktext = ["Not online", "Online"]
+        )
+    )
+    Plot( bar(x=ids, y=imageonline), graphlayout)
+
+end
+
+"""For each MS, compose a Ploty figure of indexed images per book of the *Iliad*.
+"""
+function imagesbybook(src)
+    (titles, tbls) = coltblv_indexedimagesbybook(src)
+    barlist = GenericTrace{Dict{Symbol, Any}}[]
+    for (idx, title) in enumerate(titles)
+        push!(barlist, bar(name=title, x=tbls[idx].book, y=tbls[idx].count))
+    end
+
+    graphlayout =  Layout(
+        title = "Images indexed per book of the Iliad",
+        xaxis_title = "Book of Iliad",
+        yaxis_title = "Images indexed"
     )
     Plot(barlist, graphlayout)
 end
 
 
-intro = """
-
-### Current release
-
-The complete contents of the HMT project's archive are published in plain-text files in the CITE EXchange format (CEX). The current published release  is always available in a file named `hmt-current.cex` in the project's archival github repository, in the `archive/releases-cex`  directory. (Here is a link to [the raw CEX file](https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex).)
-
-### Earlier releases
-
-Earlier releases are available in subdirectories of `archive/releases-cex` by year.  In 2018, the HMT project published 5 releases; in 2020, 9 releases.
-
-Releases in 2022 are sequentially named `hmt-2022`**ID**`.cex` where **ID** is a successive letter of the alphabet.
-
-"""
-
-function sums(mslist, normededitions, textcat)
-    pagecount = map(ms -> length(ms), mslist) |> sum
-    mscount = length(mslist)
-
-    iliadlines = filter(psg -> startswith(workcomponent(psg.urn), "tlg0012.tlg001"), normededitions) |> length
-
-
-    scholia = filter(psg -> startswith(workcomponent(psg.urn), "tlg5026"), normededitions)
-    commentcount = filter(psg-> endswith(passagecomponent(psg.urn), "comment"),  scholia) |> length
-    wordcount = map(psg -> split(psg.text) |> length, normalizededition) |> sum
-    doccount = length(textcat)
-    """The current release of the HMT archive publishes:
+function editedpages(src)
+    pgsbybook = coltblv_editedpagesbybook(src)
     
-- **$(pagecount) pages** in **$(mscount) manuscripts**
-- **$(wordcount) words** in diplomatic editions of **$(doccount) cataloged documents**
-- diplomatic and normalized editions of **$(iliadlines) lines** of the *Iliad*
-- diplomatic and normalized editions of **$(commentcount) scholia**
+    barlist = GenericTrace{Dict{Symbol, Any}}[]
+    
+    for (i, ms) in enumerate(pgsbybook[1])
+        pgs = pgsbybook[3][i]
+        bks = pgsbybook[2][i]
+        bkstrings = bks |> unique
+        bkids = map(s -> parse(Int64, s), bkstrings)
+        t = Table(book = bks, page = pgs)
+        countsdict = groupcount(t.book)
+        countdata = []
+        for bk in bkstrings
+            push!(countdata, countsdict[bk])
+        end
+        push!(barlist, bar(name=ms, x=bkids, y=countdata))
+        
+    end
 
-"""    
+    graphlayout =  Layout(
+        title = "Edited pages per book of the Iliad",
+        xaxis_title = "Book of Iliad",
+        yaxis_title = "Pages edited"
+    )
+    Plot(barlist, graphlayout)
 end
 
 app = if haskey(ENV, "URLBASE")
@@ -204,56 +217,153 @@ else
 end
 
 app.layout = html_div() do
-    dcc_markdown("*Dashboard version*: **$(DASHBOARD_VERSION)**"),
+  
+    dcc_markdown("""*Dashboard version*: **$(DASHBOARD_VERSION)** ([version notes](https://homermultitext.github.io/dashboards/thermometer/))
+    
+    *Data version*: **$(releaseinfo)**
+    """),  
 
 
-    html_h1("Overview of contents: $(releaseinfo)"),
+    html_h1("Overview of current release"),
+    dcc_checklist(
+        id = "showabout",
+        options = [
+            Dict("label" => "About HMT releases", "value" => "show")
+        ]
+    ),
+    html_div(id="about", children=""),
+    
+
+    html_div(className = "abstract",
+    children = [
     dcc_markdown(
-        sums(codices, normalizededition, textcatalog)
+        sums(images, codices, normalizededition, textcatalog)
+    )]),
+
+    # Digital images:
+    dcc_markdown("""## Digital images
+
+    ☞ Explore digital images with the [lightbox](https://www.homermultitext.org/lightbox/) dashboard.
+    """),
+    html_div(className = "panel",
+        children = [
+            html_div(
+                className = "columnl",
+                children = [
+                    dcc_markdown("#### Cataloged images"),
+                    
+                    dcc_graph(figure = imagesgraph(images))
+                    
+                ]
+            ),
+            html_div(
+                className = "columnr",
+                children = [
+                    dcc_markdown("#### Images indexed to *Iliad* lines"),
+                    dcc_graph(figure = imagesbybook(src))
+                ]
+            )
+        ]
     ),
 
 
-    dcc_markdown(intro),
+    html_div(className = "panel",
+    children = [
+        html_div(
+            className = "columnl",
+            children = [
+                dcc_markdown("#### Bifolio images of the Venetus B"),
+                dcc_graph(figure = vbbifgraph(src))
+                
+                
+            ]
+        ),
+        html_div(
+            className = "columnr",
+            children = [
+                dcc_markdown("#### Bifolio images of the Upsilon 1.1"),
+                dcc_graph(figure = e3bifgraph(src))
+                
+                
+            ]
+        )
+    ]
+),
 
 
-    html_h2("Images"),
-    "TBA",
-
-
-    html_h2("Manuscripts"),
-
-    dcc_graph(figure = pagesgraph(codices)),
-    
-    dcc_markdown("""
-    **$(length(codices))** cataloged manuscripts
-
-
-    Explore manuscripts with the [codex-browser dashboard](https://www.homermultitext.org/codex-browser/).
-
+    # Codices
+    dcc_markdown("""## Manuscripts
+                
+☞ Explore manuscripts with the [codex-browser](https://www.homermultitext.org/codex-browser/) dashboard.
 """),
+    html_div(className = "panel",
+        children = [
+            html_div(
+                className = "columnl",
+                children = [
+                    dcc_markdown("#### Cataloged manuscript pages"),
+                    dcc_graph(figure = pagesgraph(src))
+                ]
+            ),
+            html_div(
+                className = "columnr",
+                children = [
+                    dcc_markdown("#### Fully edited manuscript pages")
+                ], 
+                dcc_graph(figure = editedpages(src))
+            )
+        ]
+    ),
 
 
-    html_h2("Indexes to manuscripts"),
-    dcc_graph(figure = indexgraph(indexes)),
-    dcc_markdown("""
-    
-    Explore indexed manuscripts with the [iliad-browser dashboard](https://www.homermultitext.org/iliad-browser/).
+
+    dcc_markdown("""## Edited texts
+                
+    ☞  Explore edited texts with the [alpha-search](https://www.homermultitext.org/alpha-search/) dashboard.
     """),
-    html_h2("Editing"),
-    dcc_markdown("""
-    $(length(textcatalog)) texts.
+    html_div(className = "panel",
+        children = [
+            html_div(
+                className = "columnl",
+                children = [
+                    dcc_markdown("#### Edited passages of the *Iliad*\n\n
+                    (TBA)")
+                ]
+            ),
+            html_div(
+                className = "columnr",
+                children = [
+                    dcc_markdown("#### Edited *scholia*\n\n
+                    (TBA)")
+                ]
+            )
+        ]
+    ),
 
 
-    $(textlist(textcatalog))
-    
-    Explore edited texts with the [alpha-search dashboard](https://www.homermultitext.org/alpha-search/).
-    """),
+
+    dcc_markdown("""## Other data sets
+
+    (TBA)
+    """)
+
+end
+
+
+callback!(app, 
+    Output("about", "children"), 
+    Input("showabout", "value")
+    ) do  checkbox
+    checkbox == ["show"] ? dcc_markdown(intro) : ""
+end
 
 
 
-    dcc_markdown("""## Forthcoming   
+run_server(app, "0.0.0.0", DEFAULT_PORT, debug=true)
 
-### Manuscripts
+
+
+#= TBA:
 
 #### Quire marks
 
@@ -282,9 +392,5 @@ app.layout = html_div() do
 
 ##### Numbered simile markers
 
-(TBA)
 
-""")
-end
-
-run_server(app, "0.0.0.0", DEFAULT_PORT, debug=true)
+=#

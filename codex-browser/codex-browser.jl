@@ -5,7 +5,7 @@ Pkg.activate(joinpath(pwd(), "codex-browser"))
 Pkg.instantiate()
 
 
-DASHBOARD_VERSION = "0.2.4"
+DASHBOARD_VERSION = "0.2.5"
 # Variables configuring the app:  
 #
 #  1. location  of the assets folder (CSS, etc.)
@@ -105,7 +105,7 @@ end
 
 app.layout = html_div() do
     dcc_markdown("""
-    *Dashboard version*: **$(DASHBOARD_VERSION)**
+    *Dashboard version*: **$(DASHBOARD_VERSION)** ([version notes](https://homermultitext.github.io/dashboards/codex-browser/))
     
           
     *Data version*: **$(releaseinfo)**

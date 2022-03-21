@@ -78,7 +78,7 @@ end
 
 app.layout = html_div() do
     dcc_markdown("""
-    *Dashboard version*: **$(DASHBOARD_VERSION)**
+    *Dashboard version*: **$(DASHBOARD_VERSION)** ([version notes](https://homermultitext.github.io/dashboards/lightbox/))
            
     *Data version*: **$(releaseinfo)**
     """),

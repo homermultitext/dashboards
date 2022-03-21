@@ -6,7 +6,7 @@ Pkg.instantiate()
 
 
 
-DASHBOARD_VERSION = "0.3.0"
+DASHBOARD_VERSION = "0.3.1"
 # Variables configuring the app:  
 #
 #  1. location  of the assets folder (CSS, etc.)
@@ -66,7 +66,7 @@ end
 
 app.layout = html_div([
     dcc_markdown("""
-    *Dashboard version*: **$(DASHBOARD_VERSION)**
+    *Dashboard version*: **$(DASHBOARD_VERSION)** ([version notes](https://homermultitext.github.io/dashboards/authlists/))
     
           
     *Data version*: **$(versioninfo)** ([source](https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex))

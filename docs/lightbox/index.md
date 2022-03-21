@@ -10,6 +10,7 @@ parent: Dashboards from the Homer Multitext project
 
 ## Release notes
 
+- **0.2.3**: add link to dashboard version notes
 - **0.2.2**: fix syntax of `lightboard`.
 - **0.2.1**: modify HTML page layout.
 - **0.2.0**: incorporate collection cataloging data for image collections.
