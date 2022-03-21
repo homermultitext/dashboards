@@ -4,7 +4,7 @@ using Pkg
 Pkg.activate(joinpath(pwd(), "thermometer"))
 Pkg.instantiate()
 
-DASHBOARD_VERSION = "0.4.0"
+DASHBOARD_VERSION = "0.4.2"
 
 # Variables configuring the app:  
 #
@@ -78,15 +78,13 @@ function sums(imgcollections, mslist, normededitions, textcat)
     commentcount = filter(psg-> endswith(passagecomponent(psg.urn), "comment"),  scholia) |> length
     wordcount = map(psg -> split(psg.text) |> length, normalizededition) |> sum
     doccount = length(textcat)
-    """## Summary
-The current release of the HMT archive publishes:
+    """The current release of the HMT archive publishes:
   
-
-> - **$(imgcount)** cataloged images in **$(length(images)) collections**
-> - **$(pagecount) pages** in **$(mscount) manuscripts**
-> - **$(wordcount) words** in diplomatic editions of **$(doccount) cataloged documents**
-> - diplomatic and normalized editions of **$(iliadlines) lines** of the *Iliad*
-> - diplomatic and normalized editions of **$(commentcount) scholia**
+- **$(imgcount)** cataloged images in **$(length(images)) collections**
+- **$(pagecount) pages** in **$(mscount) manuscripts**
+- **$(wordcount) words** in diplomatic editions of **$(doccount) cataloged documents**
+- diplomatic and normalized editions of **$(iliadlines) lines** of the *Iliad*
+- diplomatic and normalized editions of **$(commentcount) scholia**
 
 """    
 end
@@ -100,7 +98,7 @@ function pagesgraph(src)
     graphlayout =  Layout(
         title="Pages per manuscript",
         xaxis_title = "Manuscript",
-        yaxis_title = "pages"
+        yaxis_title = "Number of pages"
 
     )
     Plot( bar(x=tbl.ms, y=tbl.pages), graphlayout)
@@ -114,8 +112,7 @@ function imagesgraph(imgs)
 
     graphlayout =  Layout(
         title="Images per collection",
-        xaxis_title = "collection",
-        yaxis_title = "images"
+        yaxis_title = "Number of images"
 
     )
     Plot( bar(x=tbl.siglum, y=tbl.count), graphlayout)
@@ -138,7 +135,8 @@ function vbbifgraph(cexsrc)
             ticktext = ["Not online", "Online"]
         )
     )
-    Plot( bar(x=vbids[2:end], y=imageonline[2:end]), graphlayout)
+    graphdata = scatter(x=vbids[2:end], y=imageonline[2:end])
+    Plot(graphdata , graphlayout)
 
 end
 
@@ -152,7 +150,7 @@ function e3bifgraph(cexsrc)
     end
     graphlayout =  Layout(
         title = "Online bifiolio images for Upsilon 1.1",
-        
+
         yaxis = attr(
        
             tickmode = "array",
@@ -160,7 +158,8 @@ function e3bifgraph(cexsrc)
             ticktext = ["Not online", "Online"]
         )
     )
-    Plot( bar(x=ids, y=imageonline), graphlayout)
+    graphdata = scatter(x=ids, y=imageonline)
+    Plot( graphdata, graphlayout)
 
 end
 
@@ -174,7 +173,7 @@ function imagesbybook(src)
     end
 
     graphlayout =  Layout(
-        title = "Images indexed per book of the Iliad",
+        title = "Indexed images per book of the Iliad",
         xaxis_title = "Book of Iliad",
         yaxis_title = "Images indexed"
     )
@@ -205,7 +204,7 @@ function editedpages(src)
     graphlayout =  Layout(
         title = "Edited pages per book of the Iliad",
         xaxis_title = "Book of Iliad",
-        yaxis_title = "Pages edited"
+        yaxis_title = "Number of pages edited"
     )
     Plot(barlist, graphlayout)
 end
@@ -216,39 +215,51 @@ else
     dash(assets_folder = assets)    
 end
 
-app.layout = html_div() do
+app.layout = html_div(className = "w3-container") do
   
-    dcc_markdown("""*Dashboard version*: **$(DASHBOARD_VERSION)** ([version notes](https://homermultitext.github.io/dashboards/thermometer/))
-    
-    *Data version*: **$(releaseinfo)**
-    """),  
+
+    html_div(
+        className="w3-panel w3-light-gray w3-round",
+    dcc_markdown("""- *Dashboard version*: **$(DASHBOARD_VERSION)** ([version notes](https://homermultitext.github.io/dashboards/thermometer/))
+- *Data version*: **$(releaseinfo)** ([source](https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex))
+    """)),  
 
 
-    html_h1("Overview of current release"),
-    dcc_checklist(
+    html_div(
+    children = [
+        html_h1("Overview of current release"),
+        dcc_checklist(
         id = "showabout",
         options = [
-            Dict("label" => "About HMT releases", "value" => "show")
-        ]
-    ),
-    html_div(id="about", children=""),
+            Dict("label" => " ☞ About HMT releases", "value" => "show")
+        ]),
+        html_div(id="about", className="w3-panel w3-round w3-pale-yellow", children="")
+    ]),
+    
+    
     
 
-    html_div(className = "abstract",
+    html_div(className = "w3-panel w3-light-gray very-narrow w3-round-large",
     children = [
-    dcc_markdown(
-        sums(images, codices, normalizededition, textcatalog)
+        html_h2(className="w3-center", "Summary"),
+        dcc_markdown(
+            sums(images, codices, normalizededition, textcatalog)
     )]),
 
     # Digital images:
-    dcc_markdown("""## Digital images
-
-    ☞ Explore digital images with the [lightbox](https://www.homermultitext.org/lightbox/) dashboard.
-    """),
-    html_div(className = "panel",
+    html_div(className = "w3-container",
+    children = [
+    dcc_markdown("## Digital images"),
+    html_div(className="w3-panel w3-round w3-pale-yellow narrow w3-leftbar w3-border-yellow",
+        children = 
+        [
+        dcc_markdown("☞ Explore digital images with the [lightbox](https://www.homermultitext.org/lightbox/) dashboard.")
+        ]),
+    
+    html_div(
         children = [
             html_div(
-                className = "columnl",
+                className = "w3-col l4 m4 w3-margin-bottom",
                 children = [
                     dcc_markdown("#### Cataloged images"),
                     
@@ -257,7 +268,7 @@ app.layout = html_div() do
                 ]
             ),
             html_div(
-                className = "columnr",
+                className = "w3-col l8 m8 w3-margin-bottom",
                 children = [
                     dcc_markdown("#### Images indexed to *Iliad* lines"),
                     dcc_graph(figure = imagesbybook(src))
@@ -267,10 +278,10 @@ app.layout = html_div() do
     ),
 
 
-    html_div(className = "panel",
+    html_div(
     children = [
         html_div(
-            className = "columnl",
+            className = "w3-col l6 m6 w3-margin-bottom",
             children = [
                 dcc_markdown("#### Bifolio images of the Venetus B"),
                 dcc_graph(figure = vbbifgraph(src))
@@ -279,7 +290,7 @@ app.layout = html_div() do
             ]
         ),
         html_div(
-            className = "columnr",
+            className = "w3-col l6 m6 w3-margin-bottom",
             children = [
                 dcc_markdown("#### Bifolio images of the Upsilon 1.1"),
                 dcc_graph(figure = e3bifgraph(src))
@@ -288,57 +299,64 @@ app.layout = html_div() do
             ]
         )
     ]
-),
+)]),
 
 
     # Codices
-    dcc_markdown("""## Manuscripts
-                
-☞ Explore manuscripts with the [codex-browser](https://www.homermultitext.org/codex-browser/) dashboard.
-"""),
-    html_div(className = "panel",
-        children = [
+    html_div(className = "w3-container",
+    children = [
+    dcc_markdown("## Manuscripts"),
+    html_div(className="w3-panel w3-round w3-pale-yellow narrow narrow w3-leftbar w3-border-yellow",
+    children = 
+    [
+    dcc_markdown("☞ Explore manuscripts with the [codex-browser](https://www.homermultitext.org/codex-browser/) dashboard.")
+    ]),
+
+    html_div(children = [
             html_div(
-                className = "columnl",
+                className = "w3-col l4 m4 w3-margin-bottom",
                 children = [
                     dcc_markdown("#### Cataloged manuscript pages"),
                     dcc_graph(figure = pagesgraph(src))
                 ]
             ),
             html_div(
-                className = "columnr",
+                className = "w3-col l8 m8 w3-margin-bottom",
                 children = [
                     dcc_markdown("#### Fully edited manuscript pages")
                 ], 
                 dcc_graph(figure = editedpages(src))
             )
         ]
-    ),
+    )]),
 
 
+    html_div(className = "w3-container",
+    children = [
+    dcc_markdown("## Edited texts"),
+    html_div(className="w3-panel w3-round w3-pale-yellow narrow narrow w3-leftbar w3-border-yellow",
+    children = 
+    [
+    dcc_markdown(" ☞  Explore edited texts with the [alpha-search](https://www.homermultitext.org/alpha-search/) dashboard.")
+    ]),
 
-    dcc_markdown("""## Edited texts
-                
-    ☞  Explore edited texts with the [alpha-search](https://www.homermultitext.org/alpha-search/) dashboard.
-    """),
-    html_div(className = "panel",
-        children = [
+    html_div(children = [
             html_div(
-                className = "columnl",
+                className = "w3-col l6 m6 w3-margin-bottom",
                 children = [
                     dcc_markdown("#### Edited passages of the *Iliad*\n\n
                     (TBA)")
                 ]
             ),
             html_div(
-                className = "columnr",
+                className = "w3-col l6 m6 w3-margin-bottom",
                 children = [
                     dcc_markdown("#### Edited *scholia*\n\n
                     (TBA)")
                 ]
             )
         ]
-    ),
+    )]),
 
 
 
