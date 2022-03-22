@@ -4,7 +4,7 @@ using Pkg
 Pkg.activate(joinpath(pwd(), "thermometer"))
 Pkg.instantiate()
 
-DASHBOARD_VERSION = "0.4.2"
+DASHBOARD_VERSION = "0.5.0"
 
 # Variables configuring the app:  
 #
@@ -66,6 +66,8 @@ Releases in 2022 are sequentially named `hmt-2022`**ID**`.cex` where **ID** is a
 
 """
 
+
+"""Compose markdown summary of main contents of current release."""
 function sums(imgcollections, mslist, normededitions, textcat)
     imgcount = length.(imgcollections) |> sum
     pagecount = map(ms -> length(ms), mslist) |> sum
@@ -92,7 +94,7 @@ end
 
 """Compose a Plotly figure graphing number of pages per codex.
 """
-function pagesgraph(src)
+function pagespercodexfigure(src)
     tbl = coltbl_pagecounts(src) 
 
     graphlayout =  Layout(
@@ -107,7 +109,7 @@ end
 
 """Compose a Plotly figure graphing number of images per image collection.
 """
-function imagesgraph(imgs)
+function imagespercollectionfigure(imgs)
     tbl = coltbl_imagecounts(imgs) 
 
     graphlayout =  Layout(
@@ -121,7 +123,7 @@ end
 
 """Compose a Plotly figure graphing coverage of bifolio images for Venetus B.
 """
-function vbbifgraph(cexsrc)
+function vbbiffigure(cexsrc)
     vbtbl = coltbl_vbbifolios(cexsrc)
     vbids = map(i -> objectcomponent(i), vbtbl.image)
     imageonline = map(vbtbl.online) do ok
@@ -142,7 +144,7 @@ end
 
 """Compose a Plotly figure graphing coverage of bifolio images for Upsilon 1.1
 """
-function e3bifgraph(cexsrc)
+function e3biffigure(cexsrc)
     e3tbl = coltbl_e3bifolios(cexsrc)
     ids = map(i -> objectcomponent(i), e3tbl.image)
     imageonline = map(e3tbl.online) do ok
@@ -165,7 +167,7 @@ end
 
 """For each MS, compose a Ploty figure of indexed images per book of the *Iliad*.
 """
-function imagesbybook(src)
+function imagesindexedperbookfigure(src)
     (titles, tbls) = coltblv_indexedimagesbybook(src)
     barlist = GenericTrace{Dict{Symbol, Any}}[]
     for (idx, title) in enumerate(titles)
@@ -180,8 +182,9 @@ function imagesbybook(src)
     Plot(barlist, graphlayout)
 end
 
-
-function editedpages(src)
+"""For each MS, compose a Ploty figure of edited pages per book of the *Iliad*.
+"""
+function editedpagesperbookfigure(src)
     pgsbybook = coltblv_editedpagesbybook(src)
     
     barlist = GenericTrace{Dict{Symbol, Any}}[]
@@ -214,6 +217,68 @@ function editedpages(src)
     Plot(barlist, graphlayout)
 end
 
+"Create a named tuple of integers for book and line."
+function bookline(s::AbstractString)
+    try
+        (bk,ln) = split(s, ".")
+        (book = parse(Int64, bk), line = parse(Int64,ln))
+    catch 
+        throw(ArgumentError("Failed to parse string $(s)"))
+    end
+end
+
+function paragraphingfigure(cexsrc)
+    paras = hmt_paragraphs(cexsrc)
+    mss = map(u -> droppassage(u), paras) |> unique
+
+    #Vector of traces
+    plotlydata = GenericTrace{Dict{Symbol, Any}}[]
+
+    for (idx, ms) in enumerate(mss)
+        chunks = filter(u -> urncontains(ms, u), paras)
+        datapairs = []
+        for u in chunks
+            if CitableText.isrange(u)
+                push!(datapairs, range_end(u) |> bookline)
+            end
+        end
+        t = datapairs  |> Tables.columntable
+        
+        trc = scatter(x = t.book, y = t.line, mode="markers", name = versionid(ms))
+        push!(plotlydata,trc)
+
+    end
+    plotlylayout = Layout(
+        title="Organization of texts into explicitly marked units",
+        xaxis_title="Book of the Iliad",
+        yaxis_title="Line within book",
+        xaxis = attr(
+            tickmode = "array",
+            tickvals = collect(1:24),
+            ticktext = map(i -> string(i), collect(1:24))
+        )
+    )
+
+
+    Plot(plotlydata, plotlylayout)
+   
+    
+    #=
+       burney86trace = scatter(x=burney.book, y=burney.line, mode="markers", 
+    name="Burney 86",
+    marker=attr(
+        color="Dodger",
+        size=10,
+        opacity=0.5,
+        line=attr(
+            color="Navy",
+            width=2
+        )
+
+    ))
+    =#
+end
+
 app = if haskey(ENV, "URLBASE")
     dash(assets_folder = assets, url_base_pathname = ENV["URLBASE"])
 else 
@@ -222,13 +287,12 @@ end
 
 app.layout = html_div(className = "w3-container") do
   
+    html_div(className = "w3-container w3-light-gray w3-cell w3-mobile w3-leftbar w3-border-gray",
+        children = [dcc_markdown("*Dashboard version*: **$(DASHBOARD_VERSION)** ([version notes](https://homermultitext.github.io/dashboards/lightbox/))")]),
 
-    html_div(
-        className="w3-panel w3-light-gray w3-round",
-    dcc_markdown("""- *Dashboard version*: **$(DASHBOARD_VERSION)** ([version notes](https://homermultitext.github.io/dashboards/thermometer/))
-- *Data version*: **$(releaseinfo)** ([source](https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex))
-    """)),  
-
+    html_div(className = "w3-container w3-pale-yellow w3-cell  w3-mobile w3-leftbar w3-border-yellow",
+        children = [dcc_markdown("*Data version*: **$(releaseinfo)** ([source](https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex))")]),
+  
 
     html_div(
     children = [
@@ -241,9 +305,7 @@ app.layout = html_div(className = "w3-container") do
         html_div(id="about", className="w3-panel w3-round w3-pale-yellow", children="")
     ]),
     
-    
-    
-
+       
     html_div(className = "w3-panel w3-light-gray very-narrow w3-round-large",
     children = [
         html_h2(className="w3-center", "Summary"),
@@ -254,21 +316,22 @@ app.layout = html_div(className = "w3-container") do
     # Digital images:
     html_div(className = "w3-container",
     children = [
-    dcc_markdown("## Digital images"),
-    html_div(className="w3-panel w3-round w3-pale-yellow narrow w3-leftbar w3-border-yellow",
-        children = 
-        [
-        dcc_markdown("☞ Explore digital images with the [lightbox](https://www.homermultitext.org/lightbox/) dashboard.")
-        ]),
+        dcc_markdown("## Digital images"),
+        html_div(className="w3-panel w3-round w3-pale-yellow narrow w3-leftbar w3-border-yellow",
+            children = 
+            [
+            dcc_markdown("☞ Explore digital images with the [lightbox](https://www.homermultitext.org/lightbox/) dashboard.")
+            ]
+            ),
     
-    html_div(
+       html_div(
         children = [
             html_div(
                 className = "w3-col l4 m4 s12 w3-margin-bottom",
                 children = [
-                    dcc_markdown("#### Cataloged images"),
+                    dcc_markdown("### Cataloged images"),
                     
-                    dcc_graph(figure = imagesgraph(images))
+                    dcc_graph(figure = imagespercollectionfigure(images))
                     
                 ]
             ),
@@ -276,67 +339,68 @@ app.layout = html_div(className = "w3-container") do
                 className = "w3-col l8 m8 s12 w3-margin-bottom",
                 children = [
                     dcc_markdown("#### Images indexed to *Iliad* lines"),
-                    dcc_graph(figure = imagesbybook(src))
+                    dcc_graph(figure = imagesindexedperbookfigure(src))
                 ]
             )
         ]
-    ),
-
-    
-
-    html_div(
-    children = [
-        html_div(
-            className = "w3-col l6 m6 s12 w3-margin-bottom",
-            children = [
-                dcc_markdown("#### Bifolio images of the Venetus B"),
-                dcc_graph(figure = vbbifgraph(src))
-                
-                
-            ]
         ),
+
         html_div(
-            className = "w3-col l6 m6 s12 w3-margin-bottom",
-            children = [
-                dcc_markdown("#### Bifolio images of the Upsilon 1.1"),
-                dcc_graph(figure = e3bifgraph(src))
-                
-                
-            ]
+        children = [
+            html_div(
+                className = "w3-col l6 m6 s12 w3-margin-bottom",
+                children = [
+                    dcc_markdown("#### Bifolio images of the Venetus B"),
+                    #dcc_graph(figure = vbbiffigure(src))
+                    
+                    
+                ]
+            ),
+            html_div(
+                className = "w3-col l6 m6 s12 w3-margin-bottom",
+                children = [
+                    dcc_markdown("#### Bifolio images of the Upsilon 1.1"),
+                    #dcc_graph(figure = e3biffigure(src))
+                    
+                    
+                ]
+            )
+        ]
         )
-    ]
-)]),
+    ]),
 
 
     # Codices
     html_div(className = "w3-container",
     children = [
-    dcc_markdown("## Manuscripts"),
-    html_div(className="w3-panel w3-round w3-pale-yellow narrow narrow w3-leftbar w3-border-yellow",
-    children = 
-    [
-    dcc_markdown("☞ Explore manuscripts with the [codex-browser](https://www.homermultitext.org/codex-browser/) dashboard.")
-    ]),
+        dcc_markdown("## Manuscripts"),
+        html_div(className="w3-panel w3-round w3-pale-yellow narrow narrow w3-leftbar w3-border-yellow",
+            children = 
+            [
+            dcc_markdown("☞ Explore manuscripts with the [codex-browser](https://www.homermultitext.org/codex-browser/) dashboard.")
+            ]
+        ),
 
-    html_div(children = [
+        html_div(children = [
             html_div(
                 className = "w3-col l4 m4 s12 w3-margin-bottom",
                 children = [
-                    dcc_markdown("#### Cataloged manuscript pages"),
-                    dcc_graph(figure = pagesgraph(src))
+                    dcc_markdown("### Cataloged manuscript pages"),
+                    dcc_graph(figure = pagespercodexfigure(src))
                 ]
             ),
             html_div(
                 className = "w3-col l8 m8 s12 w3-margin-bottom",
                 children = [
-                    dcc_markdown("#### Fully edited manuscript pages")
+                    dcc_markdown("### Fully edited manuscript pages")
                 ], 
-                dcc_graph(figure = editedpages(src))
+                dcc_graph(figure = editedpagesperbookfigure(src))
             )
         ]
     )]),
 
 
+    # Edited texts:
     html_div(className = "w3-container",
     children = [
     dcc_markdown("## Edited texts"),
@@ -350,14 +414,14 @@ app.layout = html_div(className = "w3-container") do
             html_div(
                 className = "w3-col l6 m6 s12 w3-margin-bottom",
                 children = [
-                    dcc_markdown("#### Edited passages of the *Iliad*\n\n
+                    dcc_markdown("### Edited passages of the *Iliad*\n\n
                     (TBA)")
                 ]
             ),
             html_div(
                 className = "w3-col l6 m6 s12 w3-margin-bottom",
                 children = [
-                    dcc_markdown("#### Edited *scholia*\n\n
+                    dcc_markdown("### Edited *scholia*\n\n
                     (TBA)")
                 ]
             )
@@ -365,11 +429,19 @@ app.layout = html_div(className = "w3-container") do
     )]),
 
 
+    # Other data sets:
+    html_div(className = "w3-container",
+    children = [
+        dcc_markdown("## Other data sets"),
+        dcc_markdown("### Paragraph units"),
+        html_div(
+            className = "w3-col l8 m8 s12 w3-margin-bottom",
+            #paragraphingfigure(src)
 
-    dcc_markdown("""## Other data sets
-
-    (TBA)
-    """)
+            dcc_graph(figure = paragraphingfigure(src))
+        )
+    ]
+    )
 
 end
 
