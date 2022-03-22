@@ -62,13 +62,53 @@ app.layout = html_div(className = "w3-container") do
     html_div(className = "w3-container w3-light-gray w3-cell w3-mobile",
         children = [dcc_markdown("*Dashboard version*: **$(DASHBOARD_VERSION)** ([version notes](https://homermultitext.github.io/dashboards/lightbox/))")]),
 
-    html_div(className = "w3-container w3-gray w3-cell  w3-mobile",
+    html_div(className = "w3-container w3-pale-yellow w3-cell  w3-mobile",
         children = [dcc_markdown("*Data version*: **$(releaseinfo)** ([source](https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex))")]),
 
 
     html_h1() do 
         dcc_markdown("HMT project: browse image collections")
-    end
+    end,
+    dcc_markdown("""Browse tables of **$(length(imagecollections))** image collections 
+    cataloging a total of **$(length.(imagecollections) |> sum)** images.
+    """),
+
+
+
+    html_div(className="w3-container",
+        children = [
+        html_div(className="w3-col l4 m4 w3-margin-bottom",
+            children = [
+                "Columns",
+                dcc_slider(                    
+                    id="columns",
+                    min=4,
+                    max=10,
+                    step=1,
+                    value=6
+                )
+                
+        ]),
+        html_div(className="w3-col l4 m4 w3-margin-bottom",
+        children = [
+            "Rows",
+            dcc_slider(
+                    id="rows",
+                    min=1,
+                    max=100,
+                    step=5,
+                    value=20,
+                )
+        ])
+        ]),
+
+
+    html_h4("Image collections"),
+    dcc_markdown(
+        """*Clear page selection below (if any), then choose an image collection*"""
+    )
+
+        
 end
 
 
