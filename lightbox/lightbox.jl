@@ -4,7 +4,7 @@ using Pkg
 Pkg.activate(joinpath(pwd(), "lightbox"))
 Pkg.instantiate()
 
-DASHBOARD_VERSION = "0.2.3"
+DASHBOARD_VERSION = "0.2.4"
 # Variables configuring the app:  
 #
 #  1. location  of the assets folder (CSS, etc.)
@@ -59,12 +59,14 @@ else
     dash(assets_folder = assets)    
 end
 
-app.layout = html_div() do
-    dcc_markdown("""
-    *Dashboard version*: **$(DASHBOARD_VERSION)** ([version notes](https://homermultitext.github.io/dashboards/lightbox/))
-           
-    *Data version*: **$(releaseinfo)**
-    """),
+app.layout = html_div(className = "w3-container") do
+    html_div(
+        className="w3-panel w3-light-gray w3-round",
+    dcc_markdown("""- *Dashboard version*: **$(DASHBOARD_VERSION)** ([version notes](https://homermultitext.github.io/dashboards/lightbox/))
+- *Data version*: **$(releaseinfo)** ([source](https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex))
+    """)),
+
+ 
     html_h1() do 
         dcc_markdown("HMT project: browse image collections")
     end,
@@ -74,10 +76,10 @@ app.layout = html_div() do
 
     
     html_div(
-        className = "panel",
+        className = "w3-container",
         children = [
             html_div(
-                className = "columnl",
+                className = "w3-col l9 m9 s12 w3-margin-bottom",
                 children = [
                     html_h4("Image collections"),
                     dcc_markdown(
@@ -92,42 +94,41 @@ app.layout = html_div() do
             ),
 
             html_div(
-            className = "columnr",
-            children = [
-            html_h6("Format table"),
-            html_p(id = "rc_label"),
+                className = "w3-col l3 m3 s12 w3-margin-bottom",
+                children = [
+                html_h6("Format table"),
+                html_p(id = "rc_label"),
         
-            dcc_markdown("*Columns*:"),
-            dcc_slider(
-                id="columns",
-                min=4,
-                max=10,
-                step=1,
-                value=6,
-            ),
+                dcc_markdown("*Columns*:"),
+                dcc_slider(
+                    id="columns",
+                    min=4,
+                    max=10,
+                    step=1,
+                    value=6,
+                ),
 
-            dcc_markdown("*Rows*:"),
-            dcc_slider(
-                id="rows",
-                min=0,
-                max=100,
-                step=5,
-                value=20,
+                dcc_markdown("*Rows*:"),
+                dcc_slider(
+                    id="rows",
+                    min=0,
+                    max=100,
+                    step=5,
+                    value=20,
+                ),
+                ]
             ),
-            ]
-        ),
         ]
     ),
 
 
     html_div(
-    className = "panel",
+    className = "w3-container",
 
     children = [
         
 
-        html_div(
-            className = "columnl",            
+        html_div(          
             children = [
                 html_h6("Page"),
                 html_div(id = "pagelabel"),
