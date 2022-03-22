@@ -233,7 +233,6 @@ function paragraphingfigure(cexsrc)
 
     #Vector of traces
     plotlydata = GenericTrace{Dict{Symbol, Any}}[]
-
     for (idx, ms) in enumerate(mss)
         chunks = filter(u -> urncontains(ms, u), paras)
         datapairs = []
@@ -244,10 +243,25 @@ function paragraphingfigure(cexsrc)
         end
         t = datapairs  |> Tables.columntable
         
-        trc = scatter(x = t.book, y = t.line, mode="markers", name = versionid(ms))
+        basesize = 6
+        
+        mrkrsize = basesize + (length(mss) - idx) * 6
+        trc = scatter(x = t.book, y = t.line, 
+            mode="markers", 
+            name = versionid(ms),
+            marker=attr(
+                size=mrkrsize,
+                #=opacity=0.5,
+                line=attr(
+                    width=1
+                )=#
+            )
+        )
+        
+        
         push!(plotlydata,trc)
-
     end
+
     plotlylayout = Layout(
         title="Organization of texts into explicitly marked units",
         xaxis_title="Book of the Iliad",
@@ -259,24 +273,7 @@ function paragraphingfigure(cexsrc)
         )
     )
 
-
     Plot(plotlydata, plotlylayout)
-   
-    
-    #=
-       burney86trace = scatter(x=burney.book, y=burney.line, mode="markers", 
-    name="Burney 86",
-    marker=attr(
-        color="Dodger",
-        size=10,
-        opacity=0.5,
-        line=attr(
-            color="Navy",
-            width=2
-        )
-
-    ))
-    =#
 end
 
 app = if haskey(ENV, "URLBASE")
@@ -435,8 +432,7 @@ app.layout = html_div(className = "w3-container") do
         dcc_markdown("## Other data sets"),
         dcc_markdown("### Paragraph units"),
         html_div(
-            className = "w3-col l8 m8 s12 w3-margin-bottom",
-            #paragraphingfigure(src)
+            #className = "w3-col l8 m8 s12 w3-margin-bottom",
 
             dcc_graph(figure = paragraphingfigure(src))
         )
