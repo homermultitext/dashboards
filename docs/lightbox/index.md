@@ -10,6 +10,7 @@ parent: Dashboards from the Homer Multitext project
 
 ## Release notes
 
+- **0.3.0**: ground-up reworking using new version of `HmtArchive` package, and `w3.css` for formatting.
 - **0.2.3**: add link to dashboard version notes
 - **0.2.2**: fix syntax of `lightboard`.
 - **0.2.1**: modify HTML page layout.
