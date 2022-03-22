@@ -59,10 +59,10 @@ end
 
 
 app.layout = html_div(className = "w3-container") do
-    html_div(className = "w3-container w3-light-gray w3-cell w3-mobile",
+    html_div(className = "w3-container w3-light-gray w3-cell w3-mobile w3-leftbar w3-border-gray",
         children = [dcc_markdown("*Dashboard version*: **$(DASHBOARD_VERSION)** ([version notes](https://homermultitext.github.io/dashboards/lightbox/))")]),
 
-    html_div(className = "w3-container w3-pale-yellow w3-cell  w3-mobile",
+    html_div(className = "w3-container w3-pale-yellow w3-cell  w3-mobile w3-leftbar w3-border-yellow",
         children = [dcc_markdown("*Data version*: **$(releaseinfo)** ([source](https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex))")]),
 
 
@@ -74,12 +74,12 @@ app.layout = html_div(className = "w3-container") do
     """),
 
 
-
+    html_h2("Format table"),
     html_div(className="w3-container",
         children = [
-        html_div(className="w3-col l4 m4 w3-margin-bottom",
+        html_div(className="w3-col l4 m4",
             children = [
-                "Columns",
+                "Number of columns",
                 dcc_slider(                    
                     id="columns",
                     min=4,
@@ -89,9 +89,9 @@ app.layout = html_div(className = "w3-container") do
                 )
                 
         ]),
-        html_div(className="w3-col l4 m4 w3-margin-bottom",
+        html_div(className="w3-col l4 m4",
         children = [
-            "Rows",
+            "Number of rows",
             dcc_slider(
                     id="rows",
                     min=1,
@@ -102,16 +102,46 @@ app.layout = html_div(className = "w3-container") do
         ])
         ]),
 
-
-    html_h4("Image collections"),
-    dcc_markdown(
+    html_p(id = "rc_label"),
+    
+    
+    html_h2("Image collections"),
+    html_div(className="w3-panel w3-round w3-border-left w3-border-gray",
+        children = [dcc_markdown(
         """*Clear page selection below (if any), then choose an image collection*"""
-    )
-
+    )]),
+      #=
+    dcc_radioitems(
+        id = "collection",
+        options = collectionmenu(imagecites)
+    ),=#
+    
+    html_div(  
+        className = "w3-col l6 m6",        
+        children = [
+            html_h2("Page"),
+            html_div(id = "pagelabel"),
+            dcc_dropdown(id = "pg"),
+            ]
+    ),
+    html_div(id = "display")
         
 end
 
 
+# Format an alert-type div displyaing selected rows/columns
+callback!(app, 
+    Output("rc_label", "children"), 
+    Input("columns", "value"),
+    Input("rows", "value")
+    ) do  c, r
+    
+    msg = html_div(className="w3-panel w3-round w3-border-left w3-border-gray",
+    dcc_markdown("*Format display in tables of **$(c)** columns  × **$(r)** rows of 
+    images*.")
+    )
+    return msg
+end
 
 
 run_server(app, "0.0.0.0", DEFAULT_PORT, debug=true)
