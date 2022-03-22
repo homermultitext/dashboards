@@ -195,4 +195,36 @@ callback!(app,
 end
 
 
+
+callback!(app, 
+    Output("display", "children"), 
+    Input("pg", "value"),
+    State("collection", "value"),
+    State("columns", "value"),
+    State("rows", "value")
+    ) do  pg, coll, r, c
+
+    if isnothing(pg)
+        ""
+    else
+
+        selectedcoll = nothing
+        for imgcoll in imagecollections
+            if string(urn(imgcoll)) == coll
+                selectedcoll = imgcoll
+            end
+        end
+
+        if isnothing(selectedcoll)
+            @warn("No images matched for $(coll)")
+            ""
+
+        else
+            lb = lightbox(selectedcoll, cols = r, rows = c)
+            preface = "#### Page $(pg)\n\nThumbnail images are linked to pannable/zoomable images in the HMT Image Citation Tool.\n\n"
+            dcc_markdown(preface * mdtable(lb, pg))
+        end
+    end
+end
+
 run_server(app, "0.0.0.0", DEFAULT_PORT, debug=true)
