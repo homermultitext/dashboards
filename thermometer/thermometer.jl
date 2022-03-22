@@ -4,7 +4,7 @@ using Pkg
 Pkg.activate(joinpath(pwd(), "thermometer"))
 Pkg.instantiate()
 
-DASHBOARD_VERSION = "0.5.0"
+DASHBOARD_VERSION = "0.6.0"
 
 # Variables configuring the app:  
 #
@@ -275,23 +275,74 @@ function paragraphingfigure(cexsrc)
 
     Plot(plotlydata, plotlylayout)
 end
-
+function bookid(u::CtsUrn)
+    psg = passagecomponent(u)
+    split(psg, ".")[1]
+end
 function scholiapsgsfigure(cexsrc)
     txts = hmt_normalized(src)
     comments = filter(psg -> endswith(passagecomponent(psg.urn), "comment"), txts.passages)
-   
-    scholiagroup = CtsUrn("urn:cts:greekLit:tlg5026:")
-    scholia = filter(u -> urncontains(scholiagroup, u), works)
+    scholiaworks = map(psg -> droppassage(psg.urn), comments) |> unique
+    #scholiagroup = CtsUrn("urn:cts:greekLit:tlg5026:")
+    #scholia = filter(psg -> urncontains(scholiagroup, psg.urn), comments)
 
 
+    barlist = GenericTrace{Dict{Symbol, Any}}[]
+    for (idx, scholiawork) in enumerate(scholiaworks)
+        siglum = workid(scholiawork)
+        selection = filter(psg -> urncontains(scholiawork, psg.urn), comments)
+        books = map(psg -> (book = bookid(psg.urn)), selection)
+        grouped = group(books)
+
+        bkids = []
+        counts  = []
+        for k in keys(grouped)0
+            push!(bkids, parse(Int64, k))
+            push!(counts, length(grouped[k]))
+        end
+        push!(barlist, 
+            bar(name=siglum, 
+            x=bkids, y=counts))
+    end
+    graphlayout =  Layout(
+        title = "Edited scholia per book of the Iliad",
+        xaxis_title = "Book of Iliad",
+        yaxis_title = "Edited scholia"
+    )
+    Plot(barlist, graphlayout)
 end
 
 function iliadpsgsfigure(cexsrc)
+    txts = hmt_normalized(src)
+
     works = map(psg -> droppassage(urn(psg)), txts.passages) |> unique
     iliad = CtsUrn("urn:cts:greekLit:tlg0012.tlg001:")
     iliads = filter(u -> urncontains(iliad, u), works)
 
-    #scholia = filter(u -> endswith(passagecomponent(u), "comment"), scholia_all)
+    
+    barlist = GenericTrace{Dict{Symbol, Any}}[]
+    for (idx, msiliad) in enumerate(iliads)
+        siglum = versionid(msiliad)
+        selection = filter(psg -> urncontains(msiliad, psg.urn), txts.passages)
+        books = map(psg -> (book = bookid(psg.urn)), selection)
+        grouped = group(books)
+
+        bkids = []
+        counts  = []
+        for k in keys(grouped)
+            push!(bkids, parse(Int64, k))
+            push!(counts, length(grouped[k]))
+        end
+        push!(barlist, 
+            bar(name=siglum, 
+            x=bkids, y=counts))
+    end
+    graphlayout =  Layout(
+        title = "Edited lines per book of the Iliad",
+        xaxis_title = "Book of Iliad",
+        yaxis_title = "Edited lines"
+    )
+    Plot(barlist, graphlayout)
 
 end
 
@@ -435,15 +486,15 @@ app.layout = html_div(className = "w3-container") do
             html_div(
                 className = "w3-col l6 m6 s12 w3-margin-bottom",
                 children = [
-                    dcc_markdown("### Edited passages of the *Iliad*\n\n
-                    (TBA)")
+                    dcc_markdown("### Edited passages of the *Iliad*"),
+                    dcc_graph(figure = iliadpsgsfigure(src))
                 ]
             ),
             html_div(
                 className = "w3-col l6 m6 s12 w3-margin-bottom",
                 children = [
-                    dcc_markdown("### Edited *scholia*\n\n
-                    (TBA)")
+                    dcc_markdown("### Edited *scholia*"),
+                    dcc_graph(figure = scholiapsgsfigure(src))
                 ]
             )
         ]
@@ -456,7 +507,6 @@ app.layout = html_div(className = "w3-container") do
         dcc_markdown("## Other data sets"),
         dcc_markdown("### Paragraph units"),
         html_div(
-            #className = "w3-col l8 m8 s12 w3-margin-bottom",
 
             dcc_graph(figure = paragraphingfigure(src))
         )
