@@ -311,7 +311,8 @@ app.layout = html_div(className = "w3-container") do
     )]),
 
     # Digital images:
-    html_div(className = "w3-container",
+    html_div(
+    className = "w3-container",
     children = [
         dcc_markdown("## Digital images"),
         html_div(className="w3-panel w3-round w3-pale-yellow narrow w3-leftbar w3-border-yellow",
@@ -321,7 +322,10 @@ app.layout = html_div(className = "w3-container") do
             ]
             ),
     
+
+
        html_div(
+        className = "w3-container",
         children = [
             html_div(
                 className = "w3-col l4 m4 s12 w3-margin-bottom",
@@ -335,35 +339,33 @@ app.layout = html_div(className = "w3-container") do
             html_div(
                 className = "w3-col l8 m8 s12 w3-margin-bottom",
                 children = [
-                    dcc_markdown("#### Images indexed to *Iliad* lines"),
+                    dcc_markdown("### Images indexed to *Iliad* lines"),
                     dcc_graph(figure = imagesindexedperbookfigure(src))
                 ]
             )
         ]
-        ),
+        ),# Basic images graphs container
 
         html_div(
+        className = "w3-container",
         children = [
             html_div(
-                className = "w3-col l6 m6 s12 w3-margin-bottom",
+                className = "w3-col l5 m5 s12 w3-margin-bottom",
                 children = [
                     dcc_markdown("#### Bifolio images of the Venetus B"),
-                    dcc_graph(figure = vbbiffigure(src))
-                    
-                    
+                    dcc_graph(figure = vbbiffigure(src))   
                 ]
             ),
             html_div(
-                className = "w3-col l6 m6 s12 w3-margin-bottom",
+                className = "w3-col l5 m5 s12 w3-margin-bottom",
                 children = [
                     dcc_markdown("#### Bifolio images of the Upsilon 1.1"),
-                    dcc_graph(figure = e3biffigure(src))
-                    
-                    
+                    dcc_graph(figure = e3biffigure(src))   
                 ]
             )
         ]
-        )
+        ) # Bifolio images container
+
     ]),
 
 
@@ -393,8 +395,9 @@ app.layout = html_div(className = "w3-container") do
                 ], 
                 dcc_graph(figure = editedpagesperbookfigure(src))
             )
+        ])
         ]
-    )]),
+    ), # Codices container
 
 
     # Edited texts:
