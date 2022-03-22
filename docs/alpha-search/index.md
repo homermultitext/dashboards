@@ -8,7 +8,12 @@ parent: Dashboards from the Homer Multitext project
 # `alpha-search` dashboard
 
 
-## Release notes
+
+The `alpha-search` dashboard lets you perform full-text searches on the editions of the Homer Multitext based on alphabetic content only (i.e., ignoring accents, punctuation and other non-alphabetic characters).
+
+**Issues tagged for 1.0 release**:  see this [milestone](https://github.com/homermultitext/dashboards/milestone/2) in the project issue tracker.
+
+## Notes on versions
 
 - **0.2.4**: add link to dashboard version notes
 - **0.2.3**: cosmetic changes to HTML layout

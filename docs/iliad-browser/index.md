@@ -8,7 +8,12 @@ parent: Dashboards from the Homer Multitext project
 # `iliad-browser` dashboard
 
 
-## Release notes
+The `iliad-browser` dashboard lets you browser manuscript images by Iliad reference.
+
+**Issues tagged for 1.0 release**:  see this [milestone](https://github.com/homermultitext/dashboards/milestone/3) in the project issue tracker.
+
+
+## Notes on versions
 
 
 - **0.4.1**: add link to dashboard version notes

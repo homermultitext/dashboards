@@ -8,7 +8,12 @@ parent: Dashboards from the Homer Multitext project
 # `codex-browser` dashboard
 
 
-## Release notes
+The `codex-browser` dashboard lets you browse facsimiles of Iliadic manuscripts.
+
+**Issues tagged for 1.0 release**:  see this [milestone](https://github.com/homermultitext/dashboards/milestone/1) in the project issue tracker.
+
+
+## Notes on versions
 
 
 - **0.2.5**: add link to dashboard version notes

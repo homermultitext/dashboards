@@ -8,9 +8,13 @@ parent: Dashboards from the Homer Multitext project
 # `thermometer` dashboard
 
 
-- served from [homermultitext.org](https://www.homermultitext.org/thermometer/)
 
-## Notes on released versions
+The `thermometer` dashboard summarizes contents of the current published release of the HMT project.
+
+**Issues tagged for 1.0 release**:  see this [milestone](https://github.com/homermultitext/dashboards/milestone/6) in the project issue tracker.
+
+
+## Notes on versions
 
 - **0.4.2**: use `w3.css` library for CSS display.
 - **0.4.1**: plot online/not online for bifolio images using scatter plot.
