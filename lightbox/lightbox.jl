@@ -100,7 +100,8 @@ app.layout = html_div(className = "w3-container") do
         ]),
 
     html_p(id = "rc_label"),
-    
+    html_div(id = "pagelabel"),
+
     html_div(className = "w3-container",
     children = [
         html_div(  
@@ -118,7 +119,6 @@ app.layout = html_div(className = "w3-container") do
             className = "w3-col l6 m6",        
             children = [
                 html_h2("Page"),
-                html_div(id = "pagelabel"),
                 dcc_dropdown(id = "pg"),
                 ]
         ),
@@ -136,7 +136,7 @@ callback!(app,
     Input("rows", "value")
     ) do  c, r
     
-    msg = html_div(className="w3-panel w3-round w3-border-left w3-border-gray",
+    msg = html_div(className="w3-panel w3-round w3-border-left w3-border-gray w3-margin-left w3-margin-right",
     dcc_markdown("""*Display will be formatted in tables of **$(c)** columns  × **$(r)** rows of images.  Clear page selection below (if any), then choose an image collection.*""")
     )
     return msg
@@ -176,9 +176,10 @@ callback!(app,
     
             # Somehow I've got this backwards?
             lb = lightbox(selectedcoll, cols = r, rows = c)
-            lbl = """
-             *Choose a lightbox table from $(pages(lb)) pages for $(coll)* ($(selectedcoll |> length) images in $(c) ×  $(r) tables)
-            """
+
+            lbl = html_div(className="w3-panel w3-round w3-border-left w3-border-gray w3-margin-left w3-margin-right",
+                dcc_markdown("""*Choose a lightbox table from **$(pages(lb))** pages for $(coll):  **($(selectedcoll |> length)** images in tables formatted $(c) ×  $(r))*"""),
+            )
 
 
             optlist = []
@@ -186,7 +187,7 @@ callback!(app,
                 push!(optlist, (label = "Page $(pnum)", value = pnum))
             end
 
-            (dcc_markdown(lbl), optlist)
+            (lbl, optlist)
                
         end
     end
