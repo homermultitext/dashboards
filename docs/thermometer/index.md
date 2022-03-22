@@ -16,7 +16,7 @@ The `thermometer` dashboard summarizes contents of the current published release
 
 ## Notes on versions
 
-
+- **0.6.0**: add graphs of edited text
 - **0.5.0**: add graph of paragraph units in MSS.
 - **0.4.2**: use `w3.css` library for CSS display.
 - **0.4.1**: plot online/not online for bifolio images using scatter plot.
