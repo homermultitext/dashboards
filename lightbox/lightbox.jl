@@ -4,7 +4,7 @@ using Pkg
 Pkg.activate(joinpath(pwd(), "lightbox"))
 Pkg.instantiate()
 
-DASHBOARD_VERSION = "0.2.4"
+DASHBOARD_VERSION = "0.3.0"
 # Variables configuring the app:  
 #
 #  1. location  of the assets folder (CSS, etc.)
@@ -31,21 +31,20 @@ iiifroot = "/project/homer/pyramidal/deepzoom"
 ict = "http://www.homermultitext.org/ict2/?"
 iiifservice = IIIFservice(baseiiifurl, iiifroot)
 
-"""Construct a table of image collections, and release info.
+"""Retrieve image collections and release info from current HMT release.
 """
 function loadhmtdata()
     src = hmt_cex()
-    imgs = hmt_images(src)
+    imgs = filter(coll -> length(coll) > 1, hmt_images(src))
     (imgs, hmt_releaseinfo(src))
 end
-#(imagecollections, imagecites, releaseinfo) = loadhmtdata()
 (imagecollections, releaseinfo) = loadhmtdata()
 
-"""Compose radio options for selecting image collection."""
-function collectionmenu(citepairs)
+"""Compose dropdown options for selecting image collection."""
+function collectionmenu(colls)
     opts = []
-    for cite in citepairs
-        push!(opts, (label = cite.label, value = string(cite.urn)))
+    for coll in colls
+        push!(opts, (label = label(coll), value = string(urn(coll))))
     end
     opts
 end
@@ -55,8 +54,6 @@ app = if haskey(ENV, "URLBASE")
 else 
     dash(assets_folder = assets)    
 end
-
-
 
 app.layout = html_div(className = "w3-container") do
     html_div(className = "w3-container w3-light-gray w3-cell w3-mobile w3-leftbar w3-border-gray",
@@ -77,7 +74,7 @@ app.layout = html_div(className = "w3-container") do
     html_h2("Format table"),
     html_div(className="w3-container",
         children = [
-        html_div(className="w3-col l4 m4",
+        html_div(className="w3-col l6 m6",
             children = [
                 "Number of columns",
                 dcc_slider(                    
@@ -89,7 +86,7 @@ app.layout = html_div(className = "w3-container") do
                 )
                 
         ]),
-        html_div(className="w3-col l4 m4",
+        html_div(className="w3-col l6 m6",
         children = [
             "Number of rows",
             dcc_slider(
@@ -104,26 +101,29 @@ app.layout = html_div(className = "w3-container") do
 
     html_p(id = "rc_label"),
     
-    
-    html_h2("Image collections"),
-    html_div(className="w3-panel w3-round w3-border-left w3-border-gray",
-        children = [dcc_markdown(
-        """*Clear page selection below (if any), then choose an image collection*"""
-    )]),
-      #=
-    dcc_radioitems(
-        id = "collection",
-        options = collectionmenu(imagecites)
-    ),=#
-    
-    html_div(  
+    html_div(className = "w3-container",
+    children = [
+        html_div(  
         className = "w3-col l6 m6",        
         children = [
-            html_h2("Page"),
-            html_div(id = "pagelabel"),
-            dcc_dropdown(id = "pg"),
-            ]
-    ),
+            html_h2("Image collection"),
+            dcc_dropdown(
+                id = "collection",
+                options = collectionmenu(imagecollections)
+            )
+        ]
+        ),
+    
+        html_div(  
+            className = "w3-col l6 m6",        
+            children = [
+                html_h2("Page"),
+                html_div(id = "pagelabel"),
+                dcc_dropdown(id = "pg"),
+                ]
+        ),
+    ]),
+
     html_div(id = "display")
         
 end
@@ -137,10 +137,60 @@ callback!(app,
     ) do  c, r
     
     msg = html_div(className="w3-panel w3-round w3-border-left w3-border-gray",
-    dcc_markdown("*Format display in tables of **$(c)** columns  × **$(r)** rows of 
-    images*.")
+    dcc_markdown("""*Display will be formatted in tables of **$(c)** columns  × **$(r)** rows of images.  Clear page selection below (if any), then choose an image collection.*""")
     )
     return msg
+end
+
+
+
+
+callback!(app, 
+    Output("pagelabel", "children"), 
+    Output("pg", "options"), 
+    Input("columns", "value"),
+    Input("rows", "value"),
+    Input("collection", "value")
+    ) do  c, r, coll
+
+    if isnothing(coll)
+        ("",[])
+
+    else
+        selectedcoll = nothing
+        for imgcoll in imagecollections
+            if string(urn(imgcoll)) == coll
+                selectedcoll = imgcoll
+            end
+        end
+       
+
+        
+        
+        if isnothing(selectedcoll)
+            @warn("No images found for $(coll)")
+            ("",[])
+
+        else
+            ("Collection of $(selectedcoll |> length)",[])
+    
+            # Somehow I've got this backwards?
+            lb = lightbox(selectedcoll, cols = r, rows = c)
+            lbl = """
+             *Choose a lightbox table from $(pages(lb)) pages for $(coll)* ($(selectedcoll |> length) images in $(c) ×  $(r) tables)
+            """
+
+
+            optlist = []
+            for pnum in 1:pages(lb)
+                push!(optlist, (label = "Page $(pnum)", value = pnum))
+            end
+
+            (dcc_markdown(lbl), optlist)
+               
+        end
+    end
+   
 end
 
 
