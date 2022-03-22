@@ -5,7 +5,7 @@ nav_order: 2
 parent: Dashboards from the Homer Multitext project
 ---
 
-# `codex-browser` dashboard
+# [`codex-browser` dashboard](https://www.homermultitext.org/codex-browser)
 
 
 The `codex-browser` dashboard lets you browse facsimiles of Iliadic manuscripts.

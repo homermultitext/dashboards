@@ -5,7 +5,7 @@ nav_order: 3
 parent: Dashboards from the Homer Multitext project
 ---
 
-# `iliad-browser` dashboard
+# [`iliad-browser` dashboard](https://www.homermultitext.org/iliad-browser)
 
 
 The `iliad-browser` dashboard lets you browser manuscript images by Iliad reference.

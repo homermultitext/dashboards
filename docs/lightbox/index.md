@@ -5,7 +5,7 @@ nav_order: 3
 parent: Dashboards from the Homer Multitext project
 ---
 
-# `lightbox` dashboard
+# [`lightbox` dashboard](https://www.homermultitext.org/lightbox/)
 
 The `lightbox` dashboard lets you browse the cataloged image collections of the Homer Multitext project.
 

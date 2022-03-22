@@ -6,7 +6,7 @@ parent: Dashboards from the Homer Multitext project
 ---
 
 
-# `authlists` dashboard
+# [`authlists` dashboard](https://www.homermultitext.org/authlists)
 
 
 The `authlists` dashboard lets you search the HMT project's authority lists.

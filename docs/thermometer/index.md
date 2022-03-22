@@ -5,7 +5,7 @@ nav_order: 0
 parent: Dashboards from the Homer Multitext project
 ---
 
-# `thermometer` dashboard
+# [`thermometer` dashboard](https://www.homermultitext.org/thermometer/)
 
 
 

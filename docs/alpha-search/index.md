@@ -5,7 +5,7 @@ nav_order: 1
 parent: Dashboards from the Homer Multitext project
 ---
 
-# `alpha-search` dashboard
+# [`alpha-search` dashboard](https://www.homermultitext.org/alpha-search)
 
 
 
