@@ -276,9 +276,30 @@ function paragraphingfigure(cexsrc)
     Plot(plotlydata, plotlylayout)
 end
 
+function scholiapsgsfigure(cexsrc)
+    txts = hmt_normalized(src)
+    comments = filter(psg -> endswith(passagecomponent(psg.urn), "comment"), txts.passages)
+   
+    scholiagroup = CtsUrn("urn:cts:greekLit:tlg5026:")
+    scholia = filter(u -> urncontains(scholiagroup, u), works)
+
+
+end
+
+function iliadpsgsfigure(cexsrc)
+    works = map(psg -> droppassage(urn(psg)), txts.passages) |> unique
+    iliad = CtsUrn("urn:cts:greekLit:tlg0012.tlg001:")
+    iliads = filter(u -> urncontains(iliad, u), works)
+
+    #scholia = filter(u -> endswith(passagecomponent(u), "comment"), scholia_all)
+
+end
+
+
 app = if haskey(ENV, "URLBASE")
     dash(assets_folder = assets, url_base_pathname = ENV["URLBASE"])
 else 
+
     dash(assets_folder = assets)    
 end
 
@@ -353,14 +374,14 @@ app.layout = html_div(className = "w3-container") do
                 className = "w3-col l5 m5 s12 w3-margin-bottom",
                 children = [
                     dcc_markdown("#### Bifolio images of the Venetus B"),
-                    dcc_graph(figure = vbbiffigure(src))   
+                    #dcc_graph(figure = vbbiffigure(src))   
                 ]
             ),
             html_div(
                 className = "w3-col l5 m5 s12 w3-margin-bottom",
                 children = [
                     dcc_markdown("#### Bifolio images of the Upsilon 1.1"),
-                    dcc_graph(figure = e3biffigure(src))   
+                    #dcc_graph(figure = e3biffigure(src))   
                 ]
             )
         ]
@@ -391,9 +412,9 @@ app.layout = html_div(className = "w3-container") do
             html_div(
                 className = "w3-col l8 m8 s12 w3-margin-bottom",
                 children = [
-                    dcc_markdown("### Fully edited manuscript pages")
-                ], 
-                dcc_graph(figure = editedpagesperbookfigure(src))
+                    dcc_markdown("### Fully edited manuscript pages"),
+                    dcc_graph(figure = editedpagesperbookfigure(src)) 
+                ]
             )
         ])
         ]
