@@ -2,6 +2,7 @@
 # github repository:
 using Pkg
 Pkg.activate(joinpath(pwd(), "authlists"))
+Pkg.resolve()
 Pkg.instantiate()
 
 

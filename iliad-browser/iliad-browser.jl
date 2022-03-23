@@ -2,6 +2,7 @@
 # github repository:
 using Pkg
 Pkg.activate(joinpath(pwd(), "iliad-browser"))
+Pkg.resolve()
 Pkg.instantiate()
 
 

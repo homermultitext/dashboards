@@ -2,6 +2,7 @@
 # github repository:
 using Pkg
 Pkg.activate(joinpath(pwd(), "alpha-search"))
+Pkg.resolve()
 Pkg.instantiate()
 
 

@@ -2,6 +2,7 @@
 # github repository:
 using Pkg
 Pkg.activate(joinpath(pwd(), "lightbox"))
+Pkg.resolve()
 Pkg.instantiate()
 
 DASHBOARD_VERSION = "0.3.0"
