@@ -15,7 +15,7 @@ The `iliad-browser` dashboard lets you browser manuscript images by Iliad refere
 
 ## Notes on versions
 
-
+- **0.4.2**: rewrite dashboard using `HmtArchive` package and `w3.css` for formatting.
 - **0.4.1**: add link to dashboard version notes
 - **0.4.0**: include data from DSE indexing
 - **0.3.0**: update packages, use proper label for manuscripts
