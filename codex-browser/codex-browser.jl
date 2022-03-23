@@ -2,7 +2,8 @@
 # github repository:
 using Pkg
 Pkg.activate(joinpath(pwd(), "codex-browser"))
-Pkg.update()
+Pkg.resolve()
+Pkg.instantiate()
 
 
 DASHBOARD_VERSION = "0.2.6"
