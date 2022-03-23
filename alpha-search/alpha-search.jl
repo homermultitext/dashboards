@@ -5,7 +5,7 @@ Pkg.activate(joinpath(pwd(), "alpha-search"))
 Pkg.instantiate()
 
 
-DASHBOARD_VERSION = "0.2.4"
+DASHBOARD_VERSION = "0.2.5"
 
 # Variables configuring the app:  
 #
@@ -20,6 +20,7 @@ DEFAULT_PORT = 8050
 
 using Dash
 using CitableBase, CitableText, CitableCorpus
+using HmtArchive, HmtArchive.Analysis
 using CiteEXchange
 using Downloads
 using Unicode
@@ -28,27 +29,18 @@ using Unicode
 # Search on strings of MIN_LENGTH or more chars:
 MIN_LENGTH = 3
 
-dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex"
-
 """ Extract text catalog, normalized editions of texts,
 and release info from HMT publication.
 """
-function loadhmtdata(url)
-    cexsrc = Downloads.download(url) |> read |> String
-    textcatalog = fromcex(cexsrc, TextCatalogCollection)
-    corpus = fromcex(cexsrc, CitableTextCorpus)
-
-    normalizedtexts = filter(
-        psg -> endswith(workcomponent(psg.urn), "normalized"),
-        corpus.passages)
-
-    libinfo = blocks(cexsrc, "citelibrary")[1]
-    infoparts = split(libinfo.lines[1], "|")    
-
-    (textcatalog, normalizedtexts, infoparts[2])
+function loadhmtdata()
+    src = hmt_cex()
+    textcatalog = hmt_textcatalog(src)
+    normalizedtexts = hmt_normalized(src)
+    releaseinfo = hmt_releaseinfo(src)
+    (textcatalog, normalizedtexts, releaseinfo)
 end
 
-(catalog, normalizededition, releaseinfo) = loadhmtdata(dataurl)
+(catalog, normalizededition, releaseinfo) = loadhmtdata()
 
 app = if haskey(ENV, "URLBASE")
     dash(assets_folder = assets, url_base_pathname = ENV["URLBASE"])
@@ -56,30 +48,30 @@ else
     dash(assets_folder = assets)    
 end
 
-app.layout = html_div() do
+app.layout = html_div(className = "w3-container") do
+    html_div(className = "w3-container w3-light-gray w3-cell w3-mobile w3-leftbar w3-border-gray",
+        children = [dcc_markdown("*Dashboard version*: **$(DASHBOARD_VERSION)** ([version notes](https://homermultitext.github.io/dashboards/alpha-search/))")]),
 
-    dcc_markdown() do 
-        """*Dashboard version*: **$(DASHBOARD_VERSION)** ([version notes](https://homermultitext.github.io/dashboards/alpha-search/))
-        
-        *Data version*: **$(releaseinfo)**
-        """
-    end,
+    html_div(className = "w3-container w3-pale-yellow w3-cell w3-mobile w3-leftbar w3-border-yellow",
+        children = [dcc_markdown("*Data version*: **$(releaseinfo)** ([source](https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex))")]),
+  
     html_h1("HMT project: search corpus by alphabetic string"),
-    dcc_markdown(
+    
+    html_div(className = "w3-panel w3-round w3-border-left w3-border-gray w3-margin-left w3-margin-right",
+        dcc_markdown(
         """
-- Select manuscripts and texts to include
--  Enter an alphabetic string (no accents or breathings) in Unicode Greek to search for
-- Minimum length of query string is **3 characters**
+- *Select manuscripts and texts to include.*
+- *Enter an alphabetic string (no accents or breathings) in Unicode Greek to search for.*
+- *Minimum length of query string is **$(MIN_LENGTH) characters**.*
 
 """
-    ),
+    )),
        
-   
-    html_div(
-        className = "panel",
-        children = [
+    html_div(className="w3-container",
+    children = [
+     
         html_div(
-            className = "column_l",
+            className = "w3-col l4 m4 s12",
             children = [
                 dcc_markdown("*Manuscripts to include*:"),
                 html_div(style=Dict("max-width" => "200px"),
@@ -95,8 +87,11 @@ app.layout = html_div() do
                 )
             ]
         ),
+
+      
+
         html_div(
-            className = "column_r",
+            className = "w3-col l4 m4 s12",
             children = [
             dcc_markdown("*Texts to include*:"),
             html_div(style=Dict("max-width" => "200px"),
@@ -113,19 +108,37 @@ app.layout = html_div() do
             )
             ]
         ),
-        ]
-    ),
+    ]),
+
+    
     html_div(
         id = "selectedcount",
-        className = "panel"
+        className = "w3-container"
     ),
-    html_div(
+
+
+    dcc_markdown("## Search"),
+    html_div(className = "w3-container w3-light-gray w3-cell w3-mobile w3-leftbar w3-border-gray",
+    children = []
+    ),
+
+
+
+
+    html_div(className = "w3-container",
+    children = [
+        html_div(className = "w3-col l2 m2",
         children = [
-        dcc_markdown("## Search\n\n*Search for*: "),
-        dcc_input(id = "query", value = "", type = "text", placeholder="αθετεον")
-        ]
+            
+            dcc_markdown("*Search for*:"),
+        ]),
+        html_div(className = "w3-col l2 m2",
+        children = [
+            dcc_input(id = "query", value = "", type = "text", placeholder="αθετεον")
+        ])
+    ]
     ),
-    html_br(),
+
     html_div(id = "results")
 end
 
@@ -216,7 +229,7 @@ function formatpsgs(psglist)
     end
     join(mdlines, "\n\n")
 end
-
+#=
 callback!(
     app, 
     Output("selectedcount", "children"),
@@ -247,5 +260,5 @@ callback!(
         ""
     end
 end
-
+=#
 run_server(app, "0.0.0.0", DEFAULT_PORT, debug=true)

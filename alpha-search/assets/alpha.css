@@ -1,21 +1,5 @@
 
-.panel {
-  padding:1em;
-
+.narrow {
+  margin-left: 5%;
+  margin-right: 5%;
 }
-.panel:after {
-    content: "";
-    display: table;
-    clear: both;
-  }
-  .column_l {
-    float: left;
-    width: 20%;
-   
-  }
-  
-  .column_r {
-    float: left;
-    width: 40%;
-   
-  }
