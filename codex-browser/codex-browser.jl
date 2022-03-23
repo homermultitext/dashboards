@@ -5,7 +5,7 @@ Pkg.activate(joinpath(pwd(), "codex-browser"))
 Pkg.instantiate()
 
 
-DASHBOARD_VERSION = "0.2.5"
+DASHBOARD_VERSION = "0.2.6"
 # Variables configuring the app:  
 #
 #  1. location  of the assets folder (CSS, etc.)
@@ -19,31 +19,26 @@ DEFAULT_PORT = 8051
 
 IMG_HEIGHT = 600
 
-baseiiifurl = "http://www.homermultitext.org/iipsrv"
-iiifroot = "/project/homer/pyramidal/deepzoom"
-
-ict = "http://www.homermultitext.org/ict2/?"
-
-dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex"
-
 using Dash
 using CitableBase, CitablePhysicalText, CitableObject
 using CitableImage
+using HmtArchive, HmtArchive.Analysis
 using CiteEXchange
 using Downloads
 
+baseiiifurl = "http://www.homermultitext.org/iipsrv"
+iiifroot = "/project/homer/pyramidal/deepzoom"
+ict = "http://www.homermultitext.org/ict2/?"
 iiifservice = IIIFservice(baseiiifurl, iiifroot)
 
 """ Extract codices and release info from HMT publication.
 """
-function loadhmtdata(url)
-    cexsrc = Downloads.download(url) |> read |> String
-    codexlist = fromcex(cexsrc, Codex)
-    libinfo = blocks(cexsrc, "citelibrary")[1]
-    infoparts = split(libinfo.lines[1], "|")  
-    (codexlist, infoparts[2])
+function loadhmtdata()
+    src = hmt_cex()
+    codexlist = hmt_codices(src)
+    (codexlist, hmt_releaseinfo(src))
 end
-(codices, releaseinfo) = loadhmtdata(dataurl)
+(codices, releaseinfo) = loadhmtdata()
 
 
 """Create menu options for list of codices."""
@@ -103,13 +98,17 @@ else
     dash(assets_folder = assets)    
 end
 
-app.layout = html_div() do
-    dcc_markdown("""
-    *Dashboard version*: **$(DASHBOARD_VERSION)** ([version notes](https://homermultitext.github.io/dashboards/codex-browser/))
-    
-          
-    *Data version*: **$(releaseinfo)**
-    """),
+app.layout = html_div(className = "w3-container") do
+    html_div(className = "w3-container w3-light-gray w3-cell w3-mobile w3-border-left w3-border-gray",
+    children = [dcc_markdown("*Dashboard version*: **$(DASHBOARD_VERSION)** ([version notes](https://homermultitext.github.io/dashboards/codex-browser/))")]),
+
+    html_div(className = "w3-container w3-light-gray w3-cell w3-mobile w3-border-left w3-border-gray",
+    children = [dcc_markdown("*Data version*: **$(releaseinfo)** ([source](https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex))")]),
+
+
+
+
+
     html_h1() do 
         dcc_markdown("HMT project: simple codex facsimiles")
     end,
@@ -118,16 +117,20 @@ app.layout = html_div() do
     """),
 
 
+    html_div(className = "w3-panel w3-round  w3-border-left w3-border-gray",
+    dcc_markdown("*Clear the page selection (if any), and choose a manuscript*.")
+    ),
+
     html_div( 
-        className = "panel",
+        className = "w3-container",
         children = [
 
 
             html_div(
-                className = "columnl",
+                className = "w3-col l4 m4 s12",
                 children = [
-                dcc_markdown("*Clear the page selection (if any), and choose a manuscript*:")
-                dcc_radioitems(
+                dcc_markdown("*Choose a manuscript*"),
+                dcc_dropdown(
                     id = "ms",
                     options = msmenu(codices),
                     value = defaultms
@@ -136,9 +139,9 @@ app.layout = html_div() do
             ),
 
             html_div(
-                className = "columnr",
+                className = "w3-col l4 m4 s12",
                 children = [
-                    dcc_markdown("*Choose a page*:")
+                    dcc_markdown("*Choose a page*"),
                     dcc_dropdown(id = "pg")
                 ]
             ),

@@ -15,7 +15,7 @@ The `codex-browser` dashboard lets you browse facsimiles of Iliadic manuscripts.
 
 ## Notes on versions
 
-
+- **0.2.6**: rework dashboard to use `HmtArchive` module, and format with `w3.css`
 - **0.2.5**: add link to dashboard version notes
 - **0.2.4**: reformat HTML in panels
 - **0.2.3**: run dashboard as separate Julia project
