@@ -5,7 +5,7 @@ Pkg.activate(joinpath(pwd(), "iliad-browser"))
 Pkg.instantiate()
 
 
-DASHBOARD_VERSION = "0.4.1"
+DASHBOARD_VERSION = "0.4.2"
 
 # Variables configuring the app:  
 #
@@ -23,8 +23,6 @@ baseiiifurl = "http://www.homermultitext.org/iipsrv"
 iiifroot = "/project/homer/pyramidal/deepzoom"
 ict = "http://www.homermultitext.org/ict2/?"
 
-dataurl = "https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex"
-
 using Dash
 using Downloads
 
@@ -35,6 +33,7 @@ using CitableObject
 using CitablePhysicalText
 using CitableText
 using CiteEXchange
+using HmtArchive, HmtArchive.Analysis
 
 ILIAD = CtsUrn("urn:cts:greekLit:tlg0012.tlg001:")
 iiifservice = IIIFservice(baseiiifurl, iiifroot)
@@ -42,17 +41,15 @@ iiifservice = IIIFservice(baseiiifurl, iiifroot)
 """ Extract codices, *Iliad* to page indexing,
 and release info from HMT publication.
 """
-function loadhmtdata(url::AbstractString)
-    cexsrc = Downloads.download(url) |> read |> String
-    codexlist = fromcex(cexsrc, Codex)
-    indexing = fromcex(cexsrc, TextOnPage)
-    dsecollectoin = fromcex(cexsrc, DSECollection)[1]
-    libinfo = blocks(cexsrc, "citelibrary")[1]
-    infoparts = split(libinfo.lines[1], "|")
-    (codexlist, indexing, dsecollectoin, infoparts[2])
+function loadhmtdata()
+    src = hmt_cex()
+    codexlist = hmt_codices(src)
+    indexing = hmt_pageindex(src)
+    dsecollection =  hmt_dse(src)[1]
+    (codexlist, indexing, dsecollection, hmt_releaseinfo(src))
 end
 
-(codices, indexes, dserecords, releaseinfo) = loadhmtdata(dataurl)
+(codices, indexes, dserecords, releaseinfo) = loadhmtdata()
 
 app = if haskey(ENV, "URLBASE")
     dash(assets_folder = assets, url_base_pathname = ENV["URLBASE"])
@@ -60,30 +57,41 @@ else
     dash(assets_folder = assets)    
 end
 
-app.layout = html_div() do
-    dcc_markdown() do 
-        """*Dashboard version*: **$(DASHBOARD_VERSION)**. ([version notes](https://homermultitext.github.io/dashboards/iliad-browser/))
-        
-        *Data version*: **$(releaseinfo)**
-        """
-    end,
+app.layout = html_div(className = "w3-container") do
+    html_div(className = "w3-container w3-light-gray w3-cell w3-mobile w3-border-left w3-border-right w3-border-gray",
+    children = [dcc_markdown("*Dashboard version*: **$(DASHBOARD_VERSION)** ([version notes](https://homermultitext.github.io/dashboards/iliad-browser/))")]),
+
+    html_div(className = "w3-container w3-light-gray w3-cell  w3-mobile w3-border-left w3-border-gray",
+    children = [dcc_markdown("*Data version*: **$(releaseinfo)** ([source](https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex))")]),
+
     html_h1() do 
         dcc_markdown("HMT project: browse manuscripts by *Iliad* line")
     end,
     
-    dcc_markdown("""
-    Enter `book.line` (e.g., `1.1`) followed by return.
-    
-    *Iliad passage*?
-    """),
-    html_div(
-        style=Dict("max-width" => "200px"),
-        dcc_input(id = "iliad", value = "", type = "text", debounce = true, placeholder="1.1")
+    html_div(className="w3-panel w3-round w3-border-left w3-border-gray w3-margin-left w3-margin-right",
+    dcc_markdown("*Enter `book.line` (e.g., `1.1`) followed by return, then choose a manuscript*.")
     ),
+    
+    html_div(className="w3-container",
+    children = [
+        html_div(className="w3-col l4 m4 s12",
+        children = [
+            dcc_markdown("*Iliad passage*?"),
+            dcc_input(id = "iliad", value = "", type = "text", debounce = true, placeholder="1.1")
+        ]),
+    
+
+        html_div(className="w3-col l4 m4 s12",
+        children = [
+            #dcc_markdown("*Manuscript page*:"),
+            html_p(id="results"),
+            dcc_dropdown(id = "mspages")
+        ]
+        )
+    ]),
 
 
-    html_h6(id="results"),
-    dcc_radioitems(id = "mspages"),
+    #html_h3(id="results"),
     html_div(id="pagedisplay")
 end
 
@@ -156,9 +164,8 @@ callback!(app,
     
     optlist = iliadindex(iliad_psg, indexes, dserecords, codices)
     hdg = isempty(optlist) ? 
-        dcc_markdown("### No pages indexed to *Iliad* $(iliad_psg)") : 
-        dcc_markdown("#### Pages including *Iliad* $(iliad_psg)")
-   (hdg, optlist)
+        dcc_markdown("*No pages indexed to* Iliad *$(iliad_psg)*") :  dcc_markdown("*$(length(optlist)) pages indexed to* Iliad  *$(iliad_psg)*:")
+        (hdg, optlist)
 end
 
 callback!(app, 
