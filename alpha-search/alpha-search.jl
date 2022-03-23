@@ -67,6 +67,7 @@ app.layout = html_div(className = "w3-container") do
 """
     )),
        
+
     html_div(className="w3-container",
     children = [
      
@@ -117,27 +118,15 @@ app.layout = html_div(className = "w3-container") do
     ),
 
 
-    dcc_markdown("## Search"),
-    html_div(className = "w3-container w3-light-gray w3-cell w3-mobile w3-leftbar w3-border-gray",
-    children = []
+
+    html_div(className = "w3-container w3-cell",
+        dcc_markdown("*Search for*:")
+    ),
+    html_div(className = "w3-container w3-cell w3-mobile",
+        dcc_input(id = "query", value = "", type = "text", placeholder="αθετεον")
     ),
 
 
-
-
-    html_div(className = "w3-container",
-    children = [
-        html_div(className = "w3-col l2 m2",
-        children = [
-            
-            dcc_markdown("*Search for*:"),
-        ]),
-        html_div(className = "w3-col l2 m2",
-        children = [
-            dcc_input(id = "query", value = "", type = "text", placeholder="αθετεον")
-        ])
-    ]
-    ),
 
     html_div(id = "results")
 end
@@ -229,14 +218,14 @@ function formatpsgs(psglist)
     end
     join(mdlines, "\n\n")
 end
-#=
+
 callback!(
     app, 
     Output("selectedcount", "children"),
     Input("ms", "value"),
     Input("txt", "value"),
 ) do ms_value, txt_value
-    passages_for_ms = select_texts(normalizededition, ms_value, txt_value)
+    passages_for_ms = select_texts(normalizededition.passages, ms_value, txt_value)
     dcc_markdown("Selected corpus has **$(length(passages_for_ms))** citable passages. ")
 end
 
@@ -248,7 +237,7 @@ callback!(
     State("txt", "value"),
     ) do query_value, ms_value, txt_value
     
-    passages_for_ms = select_texts(normalizededition, ms_value, txt_value)
+    passages_for_ms = select_texts(normalizededition.passages, ms_value, txt_value)
 
     if isnothing(passages_for_ms)
         "(no matches)"
@@ -260,5 +249,5 @@ callback!(
         ""
     end
 end
-=#
+
 run_server(app, "0.0.0.0", DEFAULT_PORT, debug=true)
