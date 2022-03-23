@@ -57,10 +57,10 @@ else
 end
 
 app.layout = html_div(className = "w3-container") do
-    html_div(className = "w3-container w3-light-gray w3-cell w3-mobile w3-leftbar w3-border-gray",
+    html_div(className = "w3-container w3-light-gray w3-cell w3-mobile w3-border-left w3-border-gray",
         children = [dcc_markdown("*Dashboard version*: **$(DASHBOARD_VERSION)** ([version notes](https://homermultitext.github.io/dashboards/lightbox/))")]),
 
-    html_div(className = "w3-container w3-light-gray w3-cell  w3-mobile w3-border-left w3-border-gray",
+    html_div(className = "w3-container w3-light-gray w3-cell  w3-mobile w3-border-left w3-border-right w3-border-gray",
         children = [dcc_markdown("*Data version*: **$(releaseinfo)** ([source](https://raw.githubusercontent.com/homermultitext/hmt-archive/master/releases-cex/hmt-current.cex))")]),
 
 
