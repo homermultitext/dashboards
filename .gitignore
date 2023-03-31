@@ -6,3 +6,4 @@ _site/
 .jekyll-cache/
 Gemfile.lock
 docs/Gemfile
+alpha-search/alpha-search/

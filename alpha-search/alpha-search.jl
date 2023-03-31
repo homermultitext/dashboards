@@ -6,7 +6,7 @@ Pkg.resolve()
 Pkg.instantiate()
 
 
-DASHBOARD_VERSION = "0.2.5"
+DASHBOARD_VERSION = "0.2.6"
 
 # Variables configuring the app:  
 #
