@@ -15,6 +15,8 @@ The `alpha-search` dashboard lets you perform full-text searches on the editions
 
 ## Notes on versions
 
+
+- **0.2.6**: update for Julia 1.8
 - **0.2.5**: rewrite using `HmtArchive` module and `w3.css` for formatting.
 - **0.2.4**: add link to dashboard version notes
 - **0.2.3**: cosmetic changes to HTML layout

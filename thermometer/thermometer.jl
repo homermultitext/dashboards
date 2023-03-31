@@ -4,7 +4,7 @@ using Pkg
 Pkg.activate(joinpath(pwd(), "thermometer"))
 Pkg.instantiate()
 
-DASHBOARD_VERSION = "0.6.0"
+DASHBOARD_VERSION = "0.6.1"
 
 # Variables configuring the app:  
 #

@@ -6,7 +6,7 @@ Pkg.resolve()
 Pkg.instantiate()
 
 
-DASHBOARD_VERSION = "0.2.6"
+DASHBOARD_VERSION = "0.2.7"
 # Variables configuring the app:  
 #
 #  1. location  of the assets folder (CSS, etc.)

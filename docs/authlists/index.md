@@ -16,6 +16,8 @@ The `authlists` dashboard lets you search the HMT project's authority lists.
 
 ## Notes on versions
 
+
+- **0.3.2**: update for Julia 1.8
 - **0.3.1**: add link to dashboard version info
 - **0.3.0**: add separate tabs for personal and place names
 - **0.2.2**: run dashboard as separate Julia project

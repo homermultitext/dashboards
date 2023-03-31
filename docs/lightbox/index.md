@@ -13,6 +13,7 @@ The `lightbox` dashboard lets you browse the cataloged image collections of the 
 
 ## Notes on versions
 
+- **0.3.1**: update for Julia 1.8
 - **0.3.0**: ground-up reworking using new version of `HmtArchive` package, and `w3.css` for formatting.
 - **0.2.3**: add link to dashboard version notes
 - **0.2.2**: fix syntax of `lightboard`.
