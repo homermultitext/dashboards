@@ -10,9 +10,9 @@ HmtArchive = "1e7b0059-6550-4515-8382-5d3f2046a0a7"
 
 [compat]
 CitableBase = "10"
-CitableCorpus = "0.12"
+CitableCorpus = "0.13"
 CitableText = "0.15"
 CiteEXchange = "0.10"
 Dash = "1"
-HmtArchive = "0.8"
-julia = "1.7"
+HmtArchive = "0.10"
+julia = "1.8"
