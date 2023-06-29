@@ -39,20 +39,14 @@ md"""*Iliad passage*: $(@bind ref confirm(TextField(placeholder="6.1")))"""
 # ╔═╡ cc322a3f-d985-4ddb-bef9-a6177e79ab78
 u = CtsUrn("urn:cts:greekLit:tlg0012.tlg001.msA:$(ref)")
 
-# ╔═╡ d95ee431-6f48-4506-aed9-bf7fbfbfb39c
-function formatscholion(s, passages)
-	contained = filter(passages) do psg
-		s == dropexemplar(collapsePassageBy(psg.urn, 1))
-	end
-	sampleurn = collapsePassageBy(contained[1].urn,1)
-	siglum = string("**", workid(sampleurn), "** ", passagecomponent(sampleurn))
-	siglum * join(map(psg -> psg.text, contained)," ")
-end
-
 # ╔═╡ f4b2c706-2055-40e9-8198-f751cfc5625c
 html"""
 <br/><br/><br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/><br/><br/>
 """
+
+# ╔═╡ bffde1a3-18d8-43a4-a1e3-2e3210925f50
+md"""> ### Background computations"""
 
 # ╔═╡ 2d474665-a639-42a2-b40c-305a9ddf9151
 md"""> Load HMT data"""
@@ -109,7 +103,7 @@ function urnsorted(urnlist, corpuspsgs)
 			(idx, corpuspsgs[idx])
 		end
 	end
-	sorted = sort(indexpairs)
+	sorted = sort(indexpairs, by = pr -> pr[1]) |> unique
 	map(pr -> pr[2], sorted)
 end
 
@@ -150,20 +144,6 @@ function scholiaforsurface(pg::Cite2Urn, dse::DSECollection)
 	filter(u -> startswith(workcomponent(u), "tlg5026"), texts)
 end
 
-# ╔═╡ 89f18d09-642d-4bca-9b02-206fc247d5ea
-function scholiabyiliad_md(pg::Cite2Urn, dse::DSECollection, v::Vector{CitablePassage}, idx)
-	lines = []
-	scholurns = scholiaforsurface(pg, dse)
-#=
-getscholia per page
-group by iliad ref
-format display
-
-=#
-
-	join(lines,"\n\n")
-end
-
 # ╔═╡ fee84b06-eee7-464f-bf15-8cc8b181662b
 scholia = filter(p -> startswith(workcomponent(p.urn), "tlg5026"), c.passages)
 
@@ -180,54 +160,8 @@ versionindependentidx = map(commentaryindex) do pr
 	(pr[1], indexedu)
 end
 
-# ╔═╡ 4f26f28e-b0ae-4d82-ab09-1169c4f95c47
-	x = begin
-		rsltprs =  map(scholiaforsurface(page, dse)) do sch
-			matches = filter(versionindependentidx) do pr
-				pr[1] == sch
-			end	
-		end |> Iterators.flatten |> collect
-		iliadmatches = map(pr -> pr[2], rsltprs)
-
-		mdlines = []
-		#for iliadpsg in urnsorted(iliadmatches, iliad)
-		#	push!(mdlines, "#### *Scholia* to *Iliad* #$(passagecomponent(iliadpsg.urn))")
-		#	scholl = filter(rsltprs) do pr
-		#		pr[2] == dropversion(iliadpsg.urn)
-		#	end
-		#	for pr in scholl
-		#		push!(mdlines, formatscholion(pr[1], scholia))
-		#end
-			
-
-			
-		#end
-		join(mdlines, "\n\n")
-		iliadmatches
-	end
-
-# ╔═╡ c950a95b-74aa-46c6-9f5f-bf8a6aa5ccc3
-Markdown.parse(x)
-
-# ╔═╡ f2ee6c46-a0d9-45bc-8843-cc07d7ed400b
-x
-
-# ╔═╡ 9c7976ff-15a7-4089-8687-d1c9bf084c11
-urnsorted(x, iliad)
-
 # ╔═╡ 8cc15d12-5a26-4795-9e77-111ad821409c
 md"> MD formatting"
-
-# ╔═╡ 6c4e6fc6-db66-4230-950c-8c543ab1d449
-"""Compose markdown for cross reference of *Iliad* line to any scholia on it."""
-function scholiaxreff_md(comments)
-	formatted = if isempty(comments)
-		[]
-	else
-		map(pr -> string("**", workid(pr[1]), "**: *", passagecomponent(pr[1]), "*"), comments)
-	end
-	isempty(formatted) ? "" : string(" (*scholia*: ", join(formatted, ", "), ")")
-end
 
 # ╔═╡ ac715f45-3be0-4e04-81e7-70c1865e4268
 """Format markdown header for page `pg`."""
@@ -238,6 +172,17 @@ function pageheader_md(pg::Cite2Urn, dse::DSECollection, v::Vector{CitablePassag
 	iliadlabel = string("### *Iliad* ", passagecomponent(sorted[1].urn), "-", passagecomponent(sorted[end].urn))
 	push!(lines, iliadlabel)
 	join(lines, "\n")
+end
+
+# ╔═╡ 6c4e6fc6-db66-4230-950c-8c543ab1d449
+"""Compose markdown for cross reference of *Iliad* line to any scholia on it."""
+function scholiaxreff_md(comments)
+	formatted = if isempty(comments)
+		[]
+	else
+		map(pr -> string("**", workid(pr[1]), "**: *", passagecomponent(pr[1]), "*"), comments)
+	end
+	isempty(formatted) ? "" : string(" (*scholia*: ", join(formatted, ", "), ")")
 end
 
 # ╔═╡ 7a4245da-ee63-46f2-8221-15cafa0eb785
@@ -258,6 +203,49 @@ function sortediliad_md(pg::Cite2Urn, dse::DSECollection, v::Vector{CitablePassa
 	join(lines,"\n\n")
 end
 
+# ╔═╡ d95ee431-6f48-4506-aed9-bf7fbfbfb39c
+"""Compose markdown display of a single scholioin."""
+function formatscholion_md(s, passages)
+	contained = filter(passages) do psg
+		s == dropexemplar(collapsePassageBy(psg.urn, 1))
+	end
+	sampleurn = collapsePassageBy(contained[1].urn,1)
+	siglum = string("**", workid(sampleurn), "** ", passagecomponent(sampleurn))
+	siglum * join(map(psg -> psg.text, contained)," ")
+end
+
+# ╔═╡ 89f18d09-642d-4bca-9b02-206fc247d5ea
+"""Compose markdown display of scholia on specified page, grouped
+by *Iliad* line the comment on.
+"""
+function scholiabyiliad_md(pg::Cite2Urn, dse::DSECollection, scholv::Vector{CitablePassage}, iliadv::Vector{CitablePassage}, idx)
+	lines = []
+	scholurns = scholiaforsurface(pg, dse)
+
+
+	rsltprs =  map(scholiaforsurface(pg, dse)) do sch
+		matches = filter(versionindependentidx) do pr
+			pr[1] == sch
+		end	
+	end |> Iterators.flatten |> collect
+	iliadmatches = map(pr -> dropsubref(pr[2]), rsltprs) |> unique
+
+	for iliadpsg in urnsorted(iliadmatches, iliadv)
+		push!(lines, "#### *Scholia* to *Iliad* $(passagecomponent(iliadpsg.urn))")
+		scholl = filter(rsltprs) do pr
+			pr[2] == dropversion(iliadpsg.urn)
+		end
+		for pr in scholl
+			push!(lines, formatscholion_md(pr[1], scholv))
+		end
+		
+	end
+
+
+	join(lines,"\n\n")
+	
+end
+
 # ╔═╡ c9c8f6c4-8d9c-4f2f-886d-5076aee45bd3
 if isempty(ref) 
 	md""
@@ -270,7 +258,7 @@ else
 
 		hdr = pageheader_md(page, dse, iliad)
 		iliaddisiplay = sortediliad_md(page, dse, iliad, versionindependentidx)
-		scholiadisplay = scholiabyiliad_md(page, dse, scholia, versionindependentidx)
+		scholiadisplay = scholiabyiliad_md(page, dse, scholia, iliad, versionindependentidx)
 		hdr * "\n" * iliaddisiplay * "\n\n"  * "## Scholia\n\n" * scholiadisplay |> Markdown.parse
 	end
 end
@@ -1641,18 +1629,14 @@ version = "17.4.0+0"
 
 # ╔═╡ Cell order:
 # ╟─bed267c4-b8a8-4052-bcc5-7880e5ee61af
-# ╠═c12bb0f9-e6ff-40f0-85f6-4488c178d084
+# ╟─c12bb0f9-e6ff-40f0-85f6-4488c178d084
 # ╟─cc322a3f-d985-4ddb-bef9-a6177e79ab78
 # ╟─0015b37e-d709-4e7d-9df3-bb2396c7a399
 # ╟─906720a0-1664-11ee-0811-a39cb371bbfb
 # ╟─36d5246e-06b4-4319-8eac-f2127679e127
 # ╟─c9c8f6c4-8d9c-4f2f-886d-5076aee45bd3
-# ╠═c950a95b-74aa-46c6-9f5f-bf8a6aa5ccc3
-# ╠═f2ee6c46-a0d9-45bc-8843-cc07d7ed400b
-# ╟─d95ee431-6f48-4506-aed9-bf7fbfbfb39c
-# ╠═4f26f28e-b0ae-4d82-ab09-1169c4f95c47
-# ╠═89f18d09-642d-4bca-9b02-206fc247d5ea
 # ╟─f4b2c706-2055-40e9-8198-f751cfc5625c
+# ╟─bffde1a3-18d8-43a4-a1e3-2e3210925f50
 # ╟─2d474665-a639-42a2-b40c-305a9ddf9151
 # ╟─d879e9c5-e142-44bb-bb37-348fbc2659c8
 # ╟─7233a304-0701-4a75-b7a1-82fe139d75c6
@@ -1664,8 +1648,7 @@ version = "17.4.0+0"
 # ╟─c0f3d5fb-c33f-4279-986d-b219831dfc64
 # ╟─34d60bef-37e5-4528-82ec-2c6b670c8986
 # ╟─7998755a-847f-4fe9-ac0a-e8e1a2e82120
-# ╠═fcfce0c2-c75a-4067-bf28-2b667ba3bf25
-# ╠═9c7976ff-15a7-4089-8687-d1c9bf084c11
+# ╟─fcfce0c2-c75a-4067-bf28-2b667ba3bf25
 # ╟─ea82ba94-7762-4054-a3fe-5c2ef7f30eb5
 # ╟─3a7fb5e3-ff79-41bf-a71d-3667df62c470
 # ╟─a50215be-2951-4e11-9217-d1470d6e160f
@@ -1674,8 +1657,10 @@ version = "17.4.0+0"
 # ╟─fee84b06-eee7-464f-bf15-8cc8b181662b
 # ╟─e9d4cf70-1362-4d8b-a1ab-91e3119a3263
 # ╟─8cc15d12-5a26-4795-9e77-111ad821409c
-# ╟─6c4e6fc6-db66-4230-950c-8c543ab1d449
 # ╟─ac715f45-3be0-4e04-81e7-70c1865e4268
 # ╟─7a4245da-ee63-46f2-8221-15cafa0eb785
+# ╟─6c4e6fc6-db66-4230-950c-8c543ab1d449
+# ╟─89f18d09-642d-4bca-9b02-206fc247d5ea
+# ╟─d95ee431-6f48-4506-aed9-bf7fbfbfb39c
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
